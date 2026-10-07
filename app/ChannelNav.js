@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 
 const links = [
   { href: "/", label: "Bluff" },
-  { href: "/brettski", label: "Brettski" },
-  { href: "/ontilt", label: "On Tilt Boys" },
+  // { href: "/brettski", label: "Brettski" },
+  // { href: "/ontilt", label: "On Tilt Boys" },
 ];
 
 export default function ChannelNav() {

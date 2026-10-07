@@ -11,6 +11,9 @@ const montserrat = Montserrat({
 export const metadata = {
   title: "Bluff YouTube performance",
   description: "Bluff YouTube performance for @bluffinbob",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({ children }) {

@@ -1,8 +1,9 @@
 "use client";
 
 import AudienceMap from "./AudienceMap";
+import FormatSplit, { splitWatchHours } from "./FormatSplit";
 import WatchChart, { yearRows } from "./WatchChart";
-import { geography } from "../data/geography";
+import { formatMonths } from "../data/formats";
 
 const compact = (n) => {
   if (n >= 1_000_000_000) {
@@ -40,6 +41,8 @@ function prettyClock(value) {
 }
 
 export default function PartnerPage({ partner }) {
+  const format = formatMonths[partner.slug];
+  const hours = splitWatchHours(partner.estimatedHours, format);
   const leadProperty = partner.properties[0];
   const other = partner.properties.slice(1);
   const otherViews = other.reduce((sum, row) => sum + row.views, 0);
@@ -71,26 +74,28 @@ export default function PartnerPage({ partner }) {
         </p>
         <section className="metrics" aria-label="Channel totals">
           <article className="metric">
-            <div className="metric-label">Watch time</div>
-            <div className="metric-value">{compact(partner.estimatedHours)}</div>
-            <div className="metric-hint">Estimate · {partner.estimatedYears.toLocaleString("en-US")} years of viewing</div>
-          </article>
-          <article className="metric">
-            <div className="metric-label">United States</div>
-            <div className="metric-value">{partner.usHourShare}%</div>
-            <div className="metric-hint">Estimate · {partner.usViewShare}% of views, {partner.usHourShare}% of hours</div>
-          </article>
-          <article className="metric">
             <div className="metric-label">Views</div>
             <div className="metric-value">{compact(partner.views)}</div>
             <div className="metric-hint">{compact(partner.subscribers)} subscribers</div>
           </article>
           <article className="metric">
-            <div className="metric-label">Stayed to watch</div>
-            <div className="metric-value">{geography.stayedToWatch}%</div>
-            <div className="metric-hint">Estimate · Bluff’s stay rate · Shorts are {partner.shortShare}% of views</div>
+            <div className="metric-label">Watch time</div>
+            <div className="metric-value">{compact(partner.estimatedHours)}</div>
+            <div className="metric-hint">Estimate · {partner.estimatedYears.toLocaleString("en-US")} years of viewing</div>
+          </article>
+          <article className="metric">
+            <div className="metric-label">Long-form</div>
+            <div className="metric-value">{compact(hours.longHours)}</div>
+            <div className="metric-hint">Estimate · {hours.longShare}% of watch time</div>
+          </article>
+          <article className="metric">
+            <div className="metric-label">Shorts</div>
+            <div className="metric-value">{compact(hours.shortHours)}</div>
+            <div className="metric-hint">Estimate · {hours.shortShare}% of watch time</div>
           </article>
         </section>
+
+        <FormatSplit format={format} />
 
         <section className="card">
           <div className="card-head">
@@ -114,10 +119,10 @@ export default function PartnerPage({ partner }) {
           <div className="card-head">
             <h2>Hours watched each month</h2>
             <p className="lead">
-              Estimated hours on videos posted that month. Shorts are {partner.shortShare}% of views. A short is capped at its own length, so it is not given a full 4 minute 26 second view.
+              Estimated hours on videos posted from June 2024 on. Red is Shorts and black is long-form. A short is capped at its own length.
             </p>
           </div>
-          <WatchChart months={partner.months} />
+          <WatchChart months={formatMonths[partner.slug].months} />
           <table className="after-chart">
             <thead>
               <tr>

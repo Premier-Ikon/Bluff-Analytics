@@ -197,6 +197,43 @@ h2 {
   font-size: 13px;
 }
 
+.format-avg {
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.format-avg b {
+  margin-right: 6px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.chart-key {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chart-key span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chart-key i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.chart-key .short { background: #ff0000; }
+.chart-key .long { background: #0f0f0f; }
+
 .pill {
   display: inline-flex;
   align-items: center;

@@ -1,8 +1,9 @@
 "use client";
 
 import AudienceMap from "./AudienceMap";
+import FormatSplit, { splitWatchHours } from "./FormatSplit";
 import WatchChart, { yearRows } from "./WatchChart";
-import { geography } from "../data/geography";
+import { formatMonths } from "../data/formats";
 import { report } from "../data/report";
 import { studio } from "../data/studio";
 
@@ -48,8 +49,23 @@ function prettyClock(value) {
   return `${s}s`;
 }
 
+function bluffWatchMonths() {
+  const mix = Object.fromEntries(formatMonths.bluff.months.map((item) => [item.key, item]));
+  return studio.months.filter((item) => item.key >= "2024-06").map((item) => {
+    const row = mix[item.key] || { shortHours: 0, longHours: 0 };
+    const estimated = row.shortHours + row.longHours;
+    const scale = estimated > 0 ? item.hours / estimated : 0;
+    return {
+      key: item.key,
+      shortHours: row.shortHours * scale,
+      longHours: row.longHours * scale,
+    };
+  });
+}
+
 export default function Page() {
   const { channel, totals } = report;
+  const hours = splitWatchHours(studio.watchHours, formatMonths.bluff);
 
   return (
     <>
@@ -72,31 +88,33 @@ export default function Page() {
 
       <main className="page">
         <p className="note">
-          Watch time, the state map, and the country mix are from YouTube Studio. Views and the casino list are from public video data.
+          Watch time, the state map, and the country mix are from YouTube Studio. The Shorts and long-form hours split that total by video length and views. Views and the casino list are from public video data.
         </p>
 
         <section className="metrics" aria-label="Channel totals">
-          <article className="metric">
-            <div className="metric-label">Watch time</div>
-            <div className="metric-value">{compact(studio.watchHours)}</div>
-            <div className="metric-hint">{studio.watchYears.toLocaleString("en-US")} years of viewing</div>
-          </article>
-          <article className="metric">
-            <div className="metric-label">United States</div>
-            <div className="metric-value">{geography.usHourShare}%</div>
-            <div className="metric-hint">{geography.usViewShare}% of views, {geography.usHourShare}% of hours</div>
-          </article>
           <article className="metric">
             <div className="metric-label">Views</div>
             <div className="metric-value">{compact(studio.views)}</div>
             <div className="metric-hint">{compact(channel.subscribers)} subscribers</div>
           </article>
           <article className="metric">
-            <div className="metric-label">Stayed to watch</div>
-            <div className="metric-value">{geography.stayedToWatch}%</div>
-            <div className="metric-hint">Average view is 5m 30s · {compact(studio.shares)} shares</div>
+            <div className="metric-label">Watch time</div>
+            <div className="metric-value">{compact(studio.watchHours)}</div>
+            <div className="metric-hint">{studio.watchYears.toLocaleString("en-US")} years of viewing</div>
+          </article>
+          <article className="metric">
+            <div className="metric-label">Long-form</div>
+            <div className="metric-value">{compact(hours.longHours)}</div>
+            <div className="metric-hint">{hours.longShare}% of watch time</div>
+          </article>
+          <article className="metric">
+            <div className="metric-label">Shorts</div>
+            <div className="metric-value">{compact(hours.shortHours)}</div>
+            <div className="metric-hint">{hours.shortShare}% of watch time</div>
           </article>
         </section>
+
+        <FormatSplit format={formatMonths.bluff} />
 
         <section className="card">
           <div className="card-head">
@@ -115,10 +133,10 @@ export default function Page() {
           <div className="card-head">
             <h2>Hours watched each month</h2>
             <p className="lead">
-              This is when the watching happened. Shorts are 78% of views. These hours are the full channel, Shorts and long-form together.
+              Measured hours from June 2024 on. Red is Shorts and black is long-form, split by the videos posted that month.
             </p>
           </div>
-          <WatchChart months={studio.months} max={4_000_000} />
+          <WatchChart months={bluffWatchMonths()} />
           <table className="after-chart">
             <thead>
               <tr>

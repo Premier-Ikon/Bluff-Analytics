@@ -24,20 +24,25 @@ function axisMax(peak) {
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const RANGE_START = "2023-03";
+const RANGE_START = "2024-06";
 const RANGE_END = "2026-10";
 
 export function alignMonths(months) {
-  const hoursByKey = Object.fromEntries(months.map((item) => [item.key, item.hours]));
+  const byKey = Object.fromEntries(months.map((item) => [item.key, item]));
   const rows = [];
   let [year, month] = RANGE_START.split("-").map(Number);
   const [endYear, endMonth] = RANGE_END.split("-").map(Number);
   while (year < endYear || (year === endYear && month <= endMonth)) {
     const key = `${year}-${String(month).padStart(2, "0")}`;
+    const row = byKey[key];
+    const shortHours = row?.shortHours || 0;
+    const longHours = row?.longHours || 0;
     rows.push({
       key,
       label: `${MONTHS[month - 1]} ${String(year).slice(2)}`,
-      hours: hoursByKey[key] || 0,
+      shortHours,
+      longHours,
+      hours: shortHours + longHours,
     });
     month += 1;
     if (month === 13) {
@@ -66,7 +71,7 @@ function tickLabel(value) {
   return `${Math.round(value / 1_000)}K`;
 }
 
-export default function WatchChart({ months, max }) {
+export default function WatchChart({ months }) {
   const series = alignMonths(months);
   const [active, setActive] = useState(null);
   const width = 1000;
@@ -77,26 +82,30 @@ export default function WatchChart({ months, max }) {
   const padB = 28;
   const innerW = width - padL - padR;
   const innerH = height - padT - padB;
-  const peak = Math.max(...series.map((item) => item.hours), 0);
-  const ceiling = max || axisMax(peak);
-  const gap = 6;
-  const barW = (innerW - gap * (series.length - 1)) / series.length;
+  const peak = Math.max(...series.flatMap((item) => [item.shortHours, item.longHours]), 0);
+  const ceiling = axisMax(peak);
+  const groupGap = 8;
+  const pairGap = 3;
+  const groupW = (innerW - groupGap * (series.length - 1)) / series.length;
+  const barW = (groupW - pairGap) / 2;
+  const radius = Math.min(3.5, barW / 2);
   const ticks = [0, 0.25, 0.5, 0.75, 1];
   const month = active == null ? null : series[active];
-  const barX = active == null ? 0 : padL + active * (barW + gap);
-  const left = ((barX + barW / 2) / width) * 100;
-  const place = active == null ? "center" : active < 4 ? "start" : active > series.length - 5 ? "end" : "center";
+  const barX = active == null ? 0 : padL + active * (groupW + groupGap);
+  const left = ((barX + groupW / 2) / width) * 100;
+  const place = active == null ? "center" : active < 3 ? "start" : active > series.length - 4 ? "end" : "center";
 
   return (
     <div className="chart-wrap" onMouseLeave={() => setActive(null)}>
       {month ? (
         <div className={`tip ${place}`} style={{ left: `${left}%` }}>
           <div className="tip-title">{month.label}</div>
-          <div className="tip-row"><span>Watch time</span><span>{compact(month.hours)} hours</span></div>
+          <div className="tip-row"><span>Shorts</span><span>{compact(month.shortHours)} hours</span></div>
+          <div className="tip-row"><span>Long-form</span><span>{compact(month.longHours)} hours</span></div>
         </div>
       ) : null}
       <svg className="chart" viewBox={`0 0 ${width} ${height}`} role="img">
-        <title>Watch time by month, in hours</title>
+        <title>Watch time by month, Shorts and long-form</title>
         {ticks.map((t) => {
           const y = padT + innerH - t * innerH;
           return (
@@ -109,16 +118,18 @@ export default function WatchChart({ months, max }) {
           );
         })}
         {series.map((item, i) => {
-          const x = padL + i * (barW + gap);
-          const barH = (item.hours / ceiling) * innerH;
+          const x = padL + i * (groupW + groupGap);
           const base = padT + innerH;
+          const shortH = (item.shortHours / ceiling) * innerH;
+          const longH = (item.longHours / ceiling) * innerH;
           const dim = active != null && active !== i;
           return (
             <g key={item.key} className="chart-col" onMouseOver={() => setActive(i)}>
-              <rect x={x - gap / 2} y={padT} width={barW + gap} height={innerH} fill="transparent" />
-              <rect x={x} y={base - barH} width={barW} height={Math.max(barH, 0)} fill="#ff0000" opacity={dim ? 0.28 : 1} />
+              <rect x={x - groupGap / 2} y={padT} width={groupW + groupGap} height={innerH} fill="transparent" />
+              <rect x={x} y={base - shortH} width={barW} height={Math.max(shortH, 0)} rx={radius} fill="#ff0000" opacity={dim ? 0.28 : 1} />
+              <rect x={x + barW + pairGap} y={base - longH} width={barW} height={Math.max(longH, 0)} rx={radius} fill="#0f0f0f" opacity={dim ? 0.28 : 1} />
               {i % 3 === 0 ? (
-                <text x={x + barW / 2} y={height - 6} textAnchor="middle" fontSize="11" fill="#606060" fontFamily="Montserrat, sans-serif">
+                <text x={x + groupW / 2} y={height - 6} textAnchor="middle" fontSize="11" fill="#606060" fontFamily="Montserrat, sans-serif">
                   {item.label}
                 </text>
               ) : null}
@@ -126,6 +137,10 @@ export default function WatchChart({ months, max }) {
           );
         })}
       </svg>
+      <div className="chart-key">
+        <span><i className="short" /> Shorts</span>
+        <span><i className="long" /> Long-form</span>
+      </div>
     </div>
   );
 }
