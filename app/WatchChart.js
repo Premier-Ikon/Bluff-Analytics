@@ -1,0 +1,131 @@
+"use client";
+
+import { useState } from "react";
+
+const compact = (n) => {
+  if (n >= 1_000_000) {
+    const m = n / 1_000_000;
+    const text = m >= 10 ? m.toFixed(1) : m.toFixed(2);
+    return `${text.replace(/\.0$/, "")}M`;
+  }
+  if (n >= 1_000) {
+    const k = n / 1_000;
+    return `${Number.isInteger(k) ? k.toFixed(0) : k.toFixed(1)}K`;
+  }
+  return n.toLocaleString("en-US");
+};
+
+function axisMax(peak) {
+  const padded = Math.max(peak, 1) * 1.08;
+  const steps = padded >= 1_000_000
+    ? [1, 1.2, 1.6, 2, 2.4, 3, 4, 5, 6, 8, 10].map((step) => step * 1_000_000)
+    : [1, 2, 2.5, 4, 5, 8, 10].map((step) => step * 100_000);
+  return steps.find((step) => step >= padded) || padded;
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const RANGE_START = "2023-03";
+const RANGE_END = "2026-10";
+
+export function alignMonths(months) {
+  const hoursByKey = Object.fromEntries(months.map((item) => [item.key, item.hours]));
+  const rows = [];
+  let [year, month] = RANGE_START.split("-").map(Number);
+  const [endYear, endMonth] = RANGE_END.split("-").map(Number);
+  while (year < endYear || (year === endYear && month <= endMonth)) {
+    const key = `${year}-${String(month).padStart(2, "0")}`;
+    rows.push({
+      key,
+      label: `${MONTHS[month - 1]} ${String(year).slice(2)}`,
+      hours: hoursByKey[key] || 0,
+    });
+    month += 1;
+    if (month === 13) {
+      month = 1;
+      year += 1;
+    }
+  }
+  return rows;
+}
+
+export function yearRows(years) {
+  const hoursByYear = Object.fromEntries(years.map((item) => [String(item.year), item.hours]));
+  return ["2023", "2024", "2025", "2026"].map((year) => ({
+    year,
+    hours: Object.prototype.hasOwnProperty.call(hoursByYear, year) ? hoursByYear[year] : null,
+  }));
+}
+
+function tickLabel(value) {
+  if (!value) return "0";
+  if (value >= 1_000_000) {
+    const m = value / 1_000_000;
+    const text = Number.isInteger(m) ? m.toFixed(0) : m.toFixed(1);
+    return `${text.replace(/\.0$/, "")}M`;
+  }
+  return `${Math.round(value / 1_000)}K`;
+}
+
+export default function WatchChart({ months, max }) {
+  const series = alignMonths(months);
+  const [active, setActive] = useState(null);
+  const width = 1000;
+  const height = 260;
+  const padL = 48;
+  const padR = 8;
+  const padT = 12;
+  const padB = 28;
+  const innerW = width - padL - padR;
+  const innerH = height - padT - padB;
+  const peak = Math.max(...series.map((item) => item.hours), 0);
+  const ceiling = max || axisMax(peak);
+  const gap = 6;
+  const barW = (innerW - gap * (series.length - 1)) / series.length;
+  const ticks = [0, 0.25, 0.5, 0.75, 1];
+  const month = active == null ? null : series[active];
+  const barX = active == null ? 0 : padL + active * (barW + gap);
+  const left = ((barX + barW / 2) / width) * 100;
+  const place = active == null ? "center" : active < 4 ? "start" : active > series.length - 5 ? "end" : "center";
+
+  return (
+    <div className="chart-wrap" onMouseLeave={() => setActive(null)}>
+      {month ? (
+        <div className={`tip ${place}`} style={{ left: `${left}%` }}>
+          <div className="tip-title">{month.label}</div>
+          <div className="tip-row"><span>Watch time</span><span>{compact(month.hours)} hours</span></div>
+        </div>
+      ) : null}
+      <svg className="chart" viewBox={`0 0 ${width} ${height}`} role="img">
+        <title>Watch time by month, in hours</title>
+        {ticks.map((t) => {
+          const y = padT + innerH - t * innerH;
+          return (
+            <g key={t}>
+              <line x1={padL} x2={width - padR} y1={y} y2={y} stroke="#efefef" strokeWidth="1" />
+              <text x={padL - 8} y={y + 4} textAnchor="end" fontSize="11" fill="#606060" fontFamily="Montserrat, sans-serif">
+                {tickLabel(ceiling * t)}
+              </text>
+            </g>
+          );
+        })}
+        {series.map((item, i) => {
+          const x = padL + i * (barW + gap);
+          const barH = (item.hours / ceiling) * innerH;
+          const base = padT + innerH;
+          const dim = active != null && active !== i;
+          return (
+            <g key={item.key} className="chart-col" onMouseOver={() => setActive(i)}>
+              <rect x={x - gap / 2} y={padT} width={barW + gap} height={innerH} fill="transparent" />
+              <rect x={x} y={base - barH} width={barW} height={Math.max(barH, 0)} fill="#ff0000" opacity={dim ? 0.28 : 1} />
+              {i % 3 === 0 ? (
+                <text x={x + barW / 2} y={height - 6} textAnchor="middle" fontSize="11" fill="#606060" fontFamily="Montserrat, sans-serif">
+                  {item.label}
+                </text>
+              ) : null}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}

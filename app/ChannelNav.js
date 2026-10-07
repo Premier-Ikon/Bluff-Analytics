@@ -1,0 +1,23 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const links = [
+  { href: "/", label: "Bluff" },
+  { href: "/brettski", label: "Brettski" },
+  { href: "/ontilt", label: "On Tilt Boys" },
+];
+
+export default function ChannelNav() {
+  const pathname = usePathname();
+  return (
+    <nav className="switcher">
+      {links.map((link) => (
+        <Link key={link.href} href={link.href} className={pathname === link.href ? "on" : ""}>
+          {link.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
