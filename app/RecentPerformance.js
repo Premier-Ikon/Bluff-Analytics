@@ -2,7 +2,7 @@
 
 import { useId } from "react";
 import { recent } from "../data/recent";
-import { social, youtubeImpressions } from "../data/social";
+import { engagementRate, social, youtubeImpressions } from "../data/social";
 
 const compact = (n) => {
   if (n >= 1_000_000) {
@@ -106,24 +106,36 @@ function PlatformIcon({ name }) {
   return null;
 }
 
-/** Internal engagement rates for the posting-frequency table, by creator. */
-const INTERNAL_ENGAGEMENT = {
-  bluff: { youtube: 13.5, instagram: 15.6, facebook: 12.4 },
-  brettski: { youtube: 11.4, instagram: 17.3, facebook: 13.2 },
-  ontilt: { youtube: 10.2, instagram: 13.7, facebook: 16 },
-};
-
 function platformRows(slug, posts) {
   const pack = social[slug] || {};
   const ig = pack.instagram;
   const fb = pack.facebook;
-  const rates = INTERNAL_ENGAGEMENT[slug] || INTERNAL_ENGAGEMENT.bluff;
-  const ytRate = rates.youtube;
-  const igRate = rates.instagram;
-  const fbRate = rates.facebook;
+  const meta = pack.meta;
+  const ytRate = posts.all.engagement;
+  const igRate = ig?.interactions != null ? engagementRate(ig.interactions, ig.views) : null;
+  const fbRate =
+    slug === "brettski"
+      ? 2.8
+      : fb?.engagement != null
+        ? engagementRate(fb.engagement, fb.views)
+        : null;
+  const metaRate = meta ? engagementRate(meta.interactions, meta.views) : null;
   const ytActions = actionsFromRate(posts.all.views, ytRate);
-  const igActions = ig ? actionsFromRate(ig.views, igRate) : null;
-  const fbActions = fb ? actionsFromRate(fb.views, fbRate) : null;
+  const igActions =
+    ig?.interactions != null
+      ? ig.interactions
+      : ig && (igRate != null || metaRate != null)
+        ? actionsFromRate(ig.views, igRate ?? metaRate)
+        : null;
+  const fbActions =
+    fb && fbRate != null
+      ? actionsFromRate(fb.views, fbRate)
+      : fb?.engagement != null
+        ? fb.engagement
+        : null;
+  const igEng = igRate != null ? rate(igRate) : meta && slug === "bluff" ? rate(metaRate) : "—";
+  const fbEng =
+    fbRate != null ? rate(fbRate) : meta && slug === "bluff" ? rate(metaRate) : "—";
 
   return [
     {
@@ -139,7 +151,7 @@ function platformRows(slug, posts) {
       posts: ig?.postsLast60 != null ? ig.postsLast60.toLocaleString("en-US") : "—",
       reach: ig ? compact(ig.views) : "—",
       actions: igActions != null ? compact(igActions) : "—",
-      engagement: ig ? rate(igRate) : "—",
+      engagement: igEng,
       filled: Boolean(ig),
     },
     {
@@ -147,7 +159,7 @@ function platformRows(slug, posts) {
       posts: fb?.postsLast60 != null ? fb.postsLast60.toLocaleString("en-US") : "—",
       reach: fb ? compact(fb.views) : "—",
       actions: fbActions != null ? compact(fbActions) : "—",
-      engagement: fb ? rate(fbRate) : "—",
+      engagement: fbEng,
       filled: Boolean(fb),
     },
   ];
@@ -239,7 +251,7 @@ export default function RecentPerformance({ slug }) {
         <div className="card-head">
           <p className="kicker">Posting frequency</p>
           <h2>Posts in the last 60 days</h2>
-          <p className="lead">August 9th 2026 – October 9th 2026</p>
+          <p className="lead">August 9th 2026 – October 7th 2026</p>
         </div>
         <div className="platform-list narrow-only">
           {platforms.map((platform) => (
