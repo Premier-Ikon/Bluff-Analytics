@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import useNarrow from "./useNarrow";
 
 const compact = (n) => {
   if (n >= 1_000_000) {
@@ -24,7 +25,7 @@ function axisMax(peak) {
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const RANGE_START = "2024-06";
+const RANGE_START = "2025-10";
 const RANGE_END = "2026-10";
 
 export function alignMonths(months) {
@@ -39,7 +40,7 @@ export function alignMonths(months) {
     const longHours = row?.longHours || 0;
     rows.push({
       key,
-      label: `${MONTHS[month - 1]} ${String(year).slice(2)}`,
+      label: month === 1 || month === 10 ? `${MONTHS[month - 1]} ${String(year).slice(2)}` : MONTHS[month - 1],
       shortHours,
       longHours,
       hours: shortHours + longHours,
@@ -55,10 +56,11 @@ export function alignMonths(months) {
 
 export function yearRows(years) {
   const hoursByYear = Object.fromEntries(years.map((item) => [String(item.year), item.hours]));
-  return ["2023", "2024", "2025", "2026"].map((year) => ({
-    year,
-    hours: Object.prototype.hasOwnProperty.call(hoursByYear, year) ? hoursByYear[year] : null,
-  }));
+  return ["2026", "2025", "2024"].flatMap((year) => (
+    Object.prototype.hasOwnProperty.call(hoursByYear, year)
+      ? [{ year, hours: hoursByYear[year] }]
+      : []
+  ));
 }
 
 function tickLabel(value) {
@@ -73,13 +75,14 @@ function tickLabel(value) {
 
 export default function WatchChart({ months }) {
   const series = alignMonths(months);
+  const narrow = useNarrow();
   const [active, setActive] = useState(null);
   const width = 1000;
-  const height = 260;
-  const padL = 48;
+  const height = narrow ? 300 : 260;
+  const padL = narrow ? 64 : 48;
   const padR = 8;
   const padT = 12;
-  const padB = 28;
+  const padB = narrow ? 36 : 28;
   const innerW = width - padL - padR;
   const innerH = height - padT - padB;
   const peak = Math.max(...series.flatMap((item) => [item.shortHours, item.longHours]), 0);
@@ -111,7 +114,7 @@ export default function WatchChart({ months }) {
           return (
             <g key={t}>
               <line x1={padL} x2={width - padR} y1={y} y2={y} stroke="#efefef" strokeWidth="1" />
-              <text x={padL - 8} y={y + 4} textAnchor="end" fontSize="11" fill="#606060" fontFamily="Montserrat, sans-serif">
+              <text x={padL - 8} y={y + 4} textAnchor="end" fontSize={narrow ? 22 : 11} fill="#606060" fontFamily="Montserrat, sans-serif">
                 {tickLabel(ceiling * t)}
               </text>
             </g>
@@ -124,15 +127,15 @@ export default function WatchChart({ months }) {
           const longH = (item.longHours / ceiling) * innerH;
           const dim = active != null && active !== i;
           return (
-            <g key={item.key} className="chart-col" onMouseOver={() => setActive(i)}>
+            <g key={item.key} className="chart-col" onMouseOver={() => setActive(i)} onPointerDown={() => setActive(i)}>
               <rect x={x - groupGap / 2} y={padT} width={groupW + groupGap} height={innerH} fill="transparent" />
               <rect x={x} y={base - shortH} width={barW} height={Math.max(shortH, 0)} rx={radius} fill="#ff0000" opacity={dim ? 0.28 : 1} />
               <rect x={x + barW + pairGap} y={base - longH} width={barW} height={Math.max(longH, 0)} rx={radius} fill="#0f0f0f" opacity={dim ? 0.28 : 1} />
-              {i % 3 === 0 ? (
-                <text x={x + groupW / 2} y={height - 6} textAnchor="middle" fontSize="11" fill="#606060" fontFamily="Montserrat, sans-serif">
+              {narrow && ![1, 4, 7, 10].includes(Number(item.key.slice(5))) ? null : (
+                <text x={x + groupW / 2} y={height - 8} textAnchor="middle" fontSize={narrow ? 22 : 11} fill="#606060" fontFamily="Montserrat, sans-serif">
                   {item.label}
                 </text>
-              ) : null}
+              )}
             </g>
           );
         })}

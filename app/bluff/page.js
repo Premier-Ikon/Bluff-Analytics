@@ -1,10 +1,12 @@
 "use client";
 
-import AudienceMap from "./AudienceMap";
-import FormatSplit, { splitWatchHours } from "./FormatSplit";
-import RecentPerformance from "./RecentPerformance";
-import WatchChart, { yearRows } from "./WatchChart";
-import { formatMonths } from "../data/formats";
+import AudienceMap from "../AudienceMap";
+import FormatSplit, { splitWatchHours } from "../FormatSplit";
+import RecentPerformance from "../RecentPerformance";
+import WatchChart, { yearRows } from "../WatchChart";
+import { formatMonths } from "../../data/formats";
+import { report } from "../../data/report";
+import { studio } from "../../data/studio";
 
 const compact = (n) => {
   if (n >= 1_000_000_000) {
@@ -24,30 +26,47 @@ const compact = (n) => {
   return n.toLocaleString("en-US");
 };
 
+const properties = [
+  { name: "El Cortez", where: "Las Vegas", videos: 168, views: 139300870 },
+  { name: "Aria", where: "Las Vegas", videos: 2, views: 4679322 },
+  { name: "Resorts World", where: "Las Vegas", videos: 16, views: 2767994 },
+  { name: "Durango", where: "Las Vegas", videos: 8, views: 945274 },
+  { name: "Venetian", where: "Las Vegas", videos: 3, views: 812503 },
+  { name: "Ellis Island", where: "Las Vegas", videos: 2, views: 322501 },
+  { name: "Encore", where: "Boston", videos: 1, views: 260124 },
+  { name: "Palazzo", where: "Las Vegas", videos: 1, views: 233584 },
+  { name: "Golden Gate", where: "Las Vegas", videos: 1, views: 212765 },
+  { name: "Hard Rock", where: "Tampa", videos: 1, views: 209261 },
+  { name: "Circa", where: "Las Vegas", videos: 2, views: 137308 },
+  { name: "Red Rock", where: "Las Vegas", videos: 1, views: 87471 },
+];
+
 function prettyClock(value) {
   const parts = String(value).split(":").map((part) => Number(part));
-  if (parts.some((part) => Number.isNaN(part))) return value;
-  if (parts.length === 2) {
-    const [m, s] = parts;
-    if (!m) return `${s}s`;
-    return `${m}m ${String(s).padStart(2, "0")}s`;
-  }
-  if (parts.length === 3) {
-    const [h, m, s] = parts;
-    if (h) return `${h}h ${m}m`;
-    if (m) return `${m}m ${String(s).padStart(2, "0")}s`;
-    return `${s}s`;
-  }
-  return value;
+  if (parts.length !== 3 || parts.some((part) => Number.isNaN(part))) return value;
+  const [h, m, s] = parts;
+  if (h) return `${h}h ${m}m`;
+  if (m) return `${m}m ${String(s).padStart(2, "0")}s`;
+  return `${s}s`;
 }
 
-export default function PartnerPage({ partner }) {
-  const format = formatMonths[partner.slug];
-  const hours = splitWatchHours(partner.estimatedHours, format);
-  const leadProperty = partner.properties[0];
-  const other = partner.properties.slice(1);
-  const otherViews = other.reduce((sum, row) => sum + row.views, 0);
-  const otherVideos = other.reduce((sum, row) => sum + row.videos, 0);
+function bluffWatchMonths() {
+  const mix = Object.fromEntries(formatMonths.bluff.months.map((item) => [item.key, item]));
+  return studio.months.filter((item) => item.key >= "2025-10").map((item) => {
+    const row = mix[item.key] || { shortHours: 0, longHours: 0 };
+    const estimated = row.shortHours + row.longHours;
+    const scale = estimated > 0 ? item.hours / estimated : 0;
+    return {
+      key: item.key,
+      shortHours: row.shortHours * scale,
+      longHours: row.longHours * scale,
+    };
+  });
+}
+
+export default function Page() {
+  const { channel, totals } = report;
+  const hours = splitWatchHours(studio.watchHours, formatMonths.bluff);
 
   return (
     <>
@@ -55,11 +74,11 @@ export default function PartnerPage({ partner }) {
         <div className="wordmark">
           <span className="accent-bar" />
           <div>
-            <div className="brand-name">{partner.name}</div>
+            <div className="brand-name">Bluff</div>
             <div className="brand-meta">
-              <a href={partner.url}>{partner.handle}</a>
+              <a href={channel.url}>{channel.handle}</a>
               {" · "}
-              {partner.since} – {partner.through}
+              January 2009 – October 7, 2026
             </div>
           </div>
         </div>
@@ -67,54 +86,49 @@ export default function PartnerPage({ partner }) {
           Download PDF
         </button>
       </header>
+
       <main className="page">
         <p className="note">
-          Views, subscribers, Shorts, and casino titles are counted from every public upload.
-          YouTube’s channel counter reads {compact(partner.channelViews)}. The uploads add up to {compact(partner.views)}.
-          Watch time, the monthly chart, and the state map are estimates: each view is counted for the full length of the video, up to Bluff’s measured average of 4 minutes 26 seconds, and the states use Bluff’s measured U.S. mix.
+          Watch time, the state map, and the country mix are from YouTube Studio. The Shorts and long-form hours split that total by video length and views. Views and the casino list are from public video data.
         </p>
+
         <section className="metrics" aria-label="Channel totals">
           <article className="metric">
             <div className="metric-label">Views</div>
-            <div className="metric-value">{compact(partner.views)}</div>
-            <div className="metric-hint">{compact(partner.subscribers)} subscribers</div>
+            <div className="metric-value">{compact(studio.views)}</div>
+            <div className="metric-hint">{compact(channel.subscribers)} subscribers</div>
           </article>
           <article className="metric">
             <div className="metric-label">Watch time</div>
-            <div className="metric-value">{compact(partner.estimatedHours)}</div>
-            <div className="metric-hint">Estimate · {partner.estimatedYears.toLocaleString("en-US")} years of viewing</div>
+            <div className="metric-value">{compact(studio.watchHours)}</div>
+            <div className="metric-hint">{studio.watchYears.toLocaleString("en-US")} years of viewing</div>
           </article>
           <article className="metric">
             <div className="metric-label">Long-form</div>
             <div className="metric-value">{compact(hours.longHours)}</div>
-            <div className="metric-hint">Estimate · {hours.longShare}% of watch time</div>
+            <div className="metric-hint">{hours.longShare}% of watch time</div>
           </article>
           <article className="metric">
             <div className="metric-label">Shorts</div>
             <div className="metric-value">{compact(hours.shortHours)}</div>
-            <div className="metric-hint">Estimate · {hours.shortShare}% of watch time</div>
+            <div className="metric-hint">{hours.shortShare}% of watch time</div>
           </article>
         </section>
 
-        <RecentPerformance slug={partner.slug} />
+        <RecentPerformance slug="bluff" />
 
-        <FormatSplit format={format} />
+        <FormatSplit format={formatMonths.bluff} />
 
         <section className="card">
           <div className="card-head">
             <h2>Where the audience watches</h2>
             <p className="lead">
-              Darker states have more watch time. California, Texas, and Florida lead. Nevada is seventh. The colors follow Bluff’s measured state mix.
+              Darker states have more watch time. California, Texas, and Florida lead. Nevada is seventh.
             </p>
           </div>
-          <AudienceMap
-            states={partner.states}
-            usViews={partner.estimatedUsViews}
-            usHours={partner.estimatedUsHours}
-            estimated
-          />
+          <AudienceMap />
           <p className="caption">
-            State shares are Bluff’s U.S. mix, scaled to this channel. Hover a state for its estimated hours.
+            State shares are of YouTube’s U.S. total. Hover a state for its hours.
           </p>
         </section>
 
@@ -122,10 +136,10 @@ export default function PartnerPage({ partner }) {
           <div className="card-head">
             <h2>Hours watched each month</h2>
             <p className="lead">
-              Estimated hours on videos posted from October 2025 through October 2026. Red is Shorts and black is long-form. A short is capped at its own length.
+              Measured hours from October 2025 through October 2026. Red is Shorts and black is long-form, split by the videos posted that month.
             </p>
           </div>
-          <WatchChart months={formatMonths[partner.slug].months} />
+          <WatchChart months={bluffWatchMonths()} />
           <div className="table-scroll"><table className="after-chart">
             <thead>
               <tr>
@@ -134,9 +148,9 @@ export default function PartnerPage({ partner }) {
               </tr>
             </thead>
             <tbody>
-              {yearRows(partner.years).map((year) => (
+              {yearRows(studio.years).map((year) => (
                 <tr key={year.year}>
-                  <td>{year.year === "2026" ? "2026 through Oct 7" : year.year}</td>
+                  <td>{year.year === "2026" ? "2026 through Oct 6" : year.year}</td>
                   <td className="num">{compact(year.hours)} hours</td>
                 </tr>
               ))}
@@ -148,24 +162,24 @@ export default function PartnerPage({ partner }) {
           <div className="card-head">
             <h2>What a property gets on camera</h2>
             <p className="lead">
-              Counted when the title names the casino. {partner.shorts.toLocaleString("en-US")} of the public videos are Shorts. {partner.videos.toLocaleString("en-US")} public videos in total.
+              Counted when the title names the casino, or the description says the shoot happened there. {totals.shorts} of the public videos are Shorts. The channel is posting about 46 videos a month in 2026.
             </p>
           </div>
           <div className="band">
             <article className="mini">
-              <div className="mini-label">{leadProperty.name}</div>
-              <div className="mini-value">{compact(leadProperty.views)}</div>
-              <div className="metric-hint">Views on {leadProperty.videos.toLocaleString("en-US")} {leadProperty.videos === 1 ? "video" : "videos"} that name it in the title.</div>
+              <div className="mini-label">El Cortez</div>
+              <div className="mini-value">139.3M</div>
+              <div className="metric-hint">Views on 168 videos. One short has {compact(studio.elCortezShortHours)} hours watched.</div>
             </article>
             <article className="mini">
               <div className="mini-label">Other properties</div>
-              <div className="mini-value">{compact(otherViews)}</div>
-              <div className="metric-hint">Views across {other.length} more {other.length === 1 ? "casino" : "casinos"} named in a title.</div>
+              <div className="mini-value">10.7M</div>
+              <div className="metric-hint">Views across 11 more casinos named on camera.</div>
             </article>
             <article className="mini">
-              <div className="mini-label">Title mentions</div>
-              <div className="mini-value">{otherVideos + leadProperty.videos}</div>
-              <div className="metric-hint">Videos whose title names one of these casinos.</div>
+              <div className="mini-label">Ellis Island</div>
+              <div className="mini-value">Invited</div>
+              <div className="metric-hint">The channel was brought in for an on-site event.</div>
             </article>
           </div>
           <div className="table-scroll"><table>
@@ -178,7 +192,7 @@ export default function PartnerPage({ partner }) {
               </tr>
             </thead>
             <tbody>
-              {partner.properties.map((row) => (
+              {properties.map((row) => (
                 <tr key={row.name}>
                   <td>{row.name}</td>
                   <td>{row.where}</td>
@@ -193,7 +207,7 @@ export default function PartnerPage({ partner }) {
         <section className="card">
           <div className="card-head">
             <h2>Most hours watched</h2>
-            <p className="lead">Watch time is estimated from the length of each video, capped at 4 minutes 26 seconds.</p>
+            <p className="lead">The videos people spent the most time with.</p>
           </div>
           <div className="table-scroll"><table>
             <thead>
@@ -206,7 +220,7 @@ export default function PartnerPage({ partner }) {
               </tr>
             </thead>
             <tbody>
-              {partner.top.map((row) => (
+              {studio.topByWatchTime.map((row) => (
                 <tr key={row.title}>
                   <td className="title">{row.title}</td>
                   <td>{row.published}</td>

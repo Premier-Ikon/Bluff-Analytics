@@ -84,7 +84,7 @@ export default function AudienceMap({
             <span>hours</span>
           </div>
         </div>
-        <table className="state-table">
+        <div className="table-scroll"><table className="state-table">
           <thead>
             <tr>
               <th>State</th>
@@ -105,7 +105,7 @@ export default function AudienceMap({
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
         <p className="caption">
           Nevada is {nevada.hourShare}% of U.S. watch time, {compact(nevada.views)} views. {estimated ? "State shares are Bluff’s measured mix, applied here." : "Shares are of the U.S. total."} About 19% of U.S. watch time is not tied to a state, so it is not colored on the map.
         </p>

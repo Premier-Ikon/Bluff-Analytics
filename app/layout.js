@@ -9,8 +9,8 @@ const montserrat = Montserrat({
 });
 
 export const metadata = {
-  title: "Bluff YouTube performance",
-  description: "Bluff YouTube performance for @bluffinbob",
+  title: "Partnership brief",
+  description: "Verified YouTube results for Bluff, Brettski, and On Tilt Boys, with open cells for property results.",
   icons: {
     icon: "/favicon.ico",
   },

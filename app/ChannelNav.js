@@ -4,9 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const links = [
-  { href: "/", label: "Bluff" },
-  // { href: "/brettski", label: "Brettski" },
-  // { href: "/ontilt", label: "On Tilt Boys" },
+  { href: "/", label: "Brief" },
+  { href: "/bluff", label: "Bluff" },
+  { href: "/brettski", label: "Brettski" },
+  { href: "/ontilt", label: "On Tilt Boys" },
 ];
 
 export default function ChannelNav() {
