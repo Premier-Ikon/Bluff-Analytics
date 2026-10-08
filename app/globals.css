@@ -757,6 +757,31 @@ td.missing,
   min-width: 100%;
 }
 
+.posts-table {
+  width: 100% !important;
+  min-width: 0 !important;
+  table-layout: fixed;
+}
+
+.posts-table th,
+.posts-table td {
+  padding: 12px 16px 12px 0;
+}
+
+.posts-table th:first-child,
+.posts-table td:first-child {
+  width: 22%;
+}
+
+.posts-table th.num,
+.posts-table td.num {
+  width: 19.5%;
+  padding-left: 12px;
+  padding-right: 8px;
+  text-align: right;
+  white-space: nowrap;
+}
+
 .narrow-only,
 .creator-cards { display: none; }
 

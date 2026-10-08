@@ -63,10 +63,8 @@ function studioWatchMonths(studioMonths, format) {
 export default function PartnerPage({ partner }) {
   const format = formatMonths[partner.slug];
   const watchHours = partner.watchHours ?? partner.estimatedHours;
-  const watchYears = partner.watchYears ?? partner.estimatedYears;
   const watchMeasured = Boolean(partner.watchMeasured);
   const hours = splitWatchHours(watchHours, format);
-  const source = watchMeasured ? "Studio" : "Estimate";
   const leadProperty = partner.properties[0];
   const other = partner.properties.slice(1);
   const otherViews = other.reduce((sum, row) => sum + row.views, 0);
@@ -83,19 +81,15 @@ export default function PartnerPage({ partner }) {
           <div>
             <div className="brand-name">{partner.name}</div>
             <div className="brand-meta">
-              <a href={partner.url}>{partner.handle}</a>
+              <a href={partner.url} target="_blank" rel="noopener noreferrer">{partner.handle}</a>
               {" · Creator dashboard · "}
               {partner.since} – {partner.through}
             </div>
           </div>
         </div>
-        <button className="pdf" type="button" onClick={() => window.print()}>
-          Download PDF
-        </button>
       </header>
 
       <main className="page">
-        <p className="kicker page-kicker">YouTube lifetime</p>
         <section className="metrics" aria-label="Channel totals">
           <article className="metric">
             <div className="metric-label">Views</div>
@@ -103,21 +97,19 @@ export default function PartnerPage({ partner }) {
             <div className="metric-hint">{compact(partner.subscribers)} subscribers</div>
           </article>
           <article className="metric">
-            <div className="metric-label">Watch time</div>
+            <div className="metric-label">Total watch hours</div>
             <div className="metric-value">{compact(watchHours)}</div>
-            <div className="metric-hint">
-              {source} · {watchYears.toLocaleString("en-US")} years of viewing
-            </div>
+            <div className="metric-hint">100% of watch time</div>
           </article>
           <article className="metric">
-            <div className="metric-label">Long-form</div>
+            <div className="metric-label">Long form watch hours</div>
             <div className="metric-value">{compact(hours.longHours)}</div>
-            <div className="metric-hint">{source} · {hours.longShare}% of watch time</div>
+            <div className="metric-hint">{hours.longShare}% of watch time</div>
           </article>
           <article className="metric">
-            <div className="metric-label">Shorts</div>
+            <div className="metric-label">Short form watch hours</div>
             <div className="metric-value">{compact(hours.shortHours)}</div>
-            <div className="metric-hint">{source} · {hours.shortShare}% of watch time</div>
+            <div className="metric-hint">{hours.shortShare}% of watch time</div>
           </article>
         </section>
 

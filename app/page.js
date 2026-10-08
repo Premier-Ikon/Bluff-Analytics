@@ -1,8 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import AudienceMap from "./AudienceMap";
 import { recent } from "../data/recent";
 import { engagementRate, social } from "../data/social";
+import { usStates } from "../data/states";
+
+const ROSTER_GEO_SCALE = 3;
+const rosterStates = usStates.states.map((state) => ({
+  ...state,
+  views: Math.round(state.views * ROSTER_GEO_SCALE),
+  hours: Math.round(state.hours * ROSTER_GEO_SCALE),
+}));
+const rosterUsViews = Math.round(usStates.usViews * ROSTER_GEO_SCALE);
+const rosterUsHours = Math.round(usStates.usHours * ROSTER_GEO_SCALE);
+const rosterNevada = rosterStates.find((state) => state.code === "NV");
 
 const compact = (n) => {
   if (n >= 1_000_000_000) {
@@ -110,9 +122,6 @@ export default function Page() {
             <div className="brand-meta">Bluff · Brettski · On Tilt Boys · October 2026</div>
           </div>
         </div>
-        <button className="pdf" type="button" onClick={() => window.print()}>
-          Download PDF
-        </button>
       </header>
 
       <main className="page">
@@ -180,7 +189,27 @@ export default function Page() {
           </article>
         </section>
 
-        <p className="section-label"><span>01</span> Creator proof</p>
+        <p className="section-label"><span>01</span> Audience geography</p>
+        <section className="card">
+          <div className="card-head">
+            <div className="card-title">
+              <h2>Where the audience watches</h2>
+              <Badge tone="est">Roster estimate</Badge>
+            </div>
+            <p className="lead">
+              Bluff’s measured U.S. state mix, scaled ×3 for the full roster. Same geographic pattern — California, Texas, and Florida still lead.
+            </p>
+          </div>
+          <AudienceMap
+            states={rosterStates}
+            usViews={rosterUsViews}
+            usHours={rosterUsHours}
+            estimated
+            caption={`Nevada is ${rosterNevada.hourShare}% of U.S. watch time, about ${compact(rosterNevada.views)} views across the roster estimate. State shares match Bluff’s Studio mix; hours and views are ×3. About 19% of U.S. watch time is not tied to a state, so it is not colored on the map.`}
+          />
+        </section>
+
+        <p className="section-label"><span>02</span> Creator proof</p>
         <section className="card">
           <div className="card-head">
             <h2>Audience by channel</h2>
@@ -357,7 +386,7 @@ export default function Page() {
           </div>
         </section>
 
-        <p className="section-label"><span>02</span> Prior activation</p>
+        <p className="section-label"><span>03</span> Prior activation</p>
         <section className="card">
           <div className="card-head">
             <div className="card-title">
@@ -405,7 +434,7 @@ export default function Page() {
           </div>
         </section>
 
-        <p className="section-label"><span>03</span> Sample property visit</p>
+        <p className="section-label"><span>04</span> Sample property visit</p>
         <section className="card">
           <div className="card-head">
             <div className="card-title">
@@ -427,7 +456,7 @@ export default function Page() {
           </ol>
         </section>
 
-        <p className="section-label"><span>04</span> Investment measures</p>
+        <p className="section-label"><span>05</span> Investment measures</p>
         <section className="card">
           <div className="card-head">
             <h2>How value will be calculated</h2>

@@ -28,7 +28,9 @@ export default function AudienceMap({
   states = usStates.states,
   usViews = usStates.usViews,
   usHours = usStates.usHours,
+  usShare = 79.6,
   estimated = false,
+  caption = null,
 }) {
   const [active, setActive] = useState(null);
   const [x, y, width, height] = usMap.viewBox;
@@ -72,7 +74,7 @@ export default function AudienceMap({
       </div>
       <div>
         <div className="us-stat-kicker">United States</div>
-        <div className="us-stat-value">79.6%</div>
+        <div className="us-stat-value">{usShare}%</div>
         <div className="us-stat-label">{estimated ? "of estimated watch time" : "of all watch time"}</div>
         <div className="us-stat-row">
           <div>
@@ -107,7 +109,15 @@ export default function AudienceMap({
           </tbody>
         </table></div>
         <p className="caption">
-          Nevada is {nevada.hourShare}% of U.S. watch time, {compact(nevada.views)} views. {estimated ? "State shares are Bluff’s measured mix, applied here." : "Shares are of the U.S. total."} About 19% of U.S. watch time is not tied to a state, so it is not colored on the map.
+          {caption || (
+            <>
+              Nevada is {nevada?.hourShare}% of U.S. watch time, {compact(nevada?.views || 0)} views.{" "}
+              {estimated
+                ? "State shares are Bluff’s measured mix, applied here."
+                : "Shares are of the U.S. total."}{" "}
+              About 19% of U.S. watch time is not tied to a state, so it is not colored on the map.
+            </>
+          )}
         </p>
       </div>
     </div>

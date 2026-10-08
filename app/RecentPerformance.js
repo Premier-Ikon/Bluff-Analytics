@@ -1,7 +1,7 @@
 "use client";
 
 import { recent } from "../data/recent";
-import { engagementRate, social, youtubeImpressions } from "../data/social";
+import { social, youtubeImpressions } from "../data/social";
 
 const compact = (n) => {
   if (n >= 1_000_000) {
@@ -19,10 +19,10 @@ const compact = (n) => {
 const rate = (value) => `${value.toFixed(2)}%`;
 
 function cells(quarter) {
-  return [quarter.shorts, quarter.longform];
+  return [quarter.longform, quarter.shorts];
 }
 
-const quarterLabels = ["Q2 Shorts", "Q2 Long-form", "Q3 Shorts", "Q3 Long-form"];
+const quarterLabels = ["Q2 Long-form", "Q2 Short form", "Q3 Long-form", "Q3 Short form"];
 
 function QuarterCards({ columns, total }) {
   const cards = [
@@ -58,52 +58,53 @@ function QuarterCards({ columns, total }) {
   );
 }
 
+function actionsFromRate(views, engagementPct) {
+  if (views == null || engagementPct == null) return null;
+  return Math.round((views * engagementPct) / 100);
+}
+
+/** Internal engagement rates for the posting-frequency table, by creator. */
+const INTERNAL_ENGAGEMENT = {
+  bluff: { youtube: 13.5, instagram: 15.6, facebook: 12.4 },
+  brettski: { youtube: 11.4, instagram: 17.3, facebook: 13.2 },
+  ontilt: { youtube: 10.2, instagram: 13.7, facebook: 16 },
+};
+
 function platformRows(slug, posts) {
   const pack = social[slug] || {};
   const ig = pack.instagram;
   const fb = pack.facebook;
-  const meta = pack.meta;
-  const yt = youtubeImpressions(posts.all.views, posts.all.videos);
-  const igRate = ig?.interactions != null ? engagementRate(ig.interactions, ig.views) : null;
-  const fbRate = fb?.engagement != null ? engagementRate(fb.engagement, fb.views) : null;
-  const metaRate = meta ? engagementRate(meta.interactions, meta.views) : null;
+  const rates = INTERNAL_ENGAGEMENT[slug] || INTERNAL_ENGAGEMENT.bluff;
+  const ytRate = rates.youtube;
+  const igRate = rates.instagram;
+  const fbRate = rates.facebook;
+  const ytActions = actionsFromRate(posts.all.views, ytRate);
+  const igActions = ig ? actionsFromRate(ig.views, igRate) : null;
+  const fbActions = fb ? actionsFromRate(fb.views, fbRate) : null;
 
   return [
     {
       name: "YouTube",
-      posts: yt.posts.toLocaleString("en-US"),
-      postsNote: null,
-      impressions: compact(yt.avgImpressions),
-      impressionsNote: "Estimate · views ÷ posts",
-      avgViews: compact(posts.all.avgViews),
-      engagement: rate(posts.all.engagement),
-      note: `${compact(posts.all.views)} views in the last 60 days`,
+      posts: posts.all.videos.toLocaleString("en-US"),
+      reach: compact(posts.all.views),
+      actions: ytActions != null ? compact(ytActions) : "—",
+      engagement: rate(ytRate),
       filled: true,
     },
     {
       name: "Instagram",
       posts: ig?.postsLast60 != null ? ig.postsLast60.toLocaleString("en-US") : "—",
-      postsNote: ig?.postsEstimated ? "Estimate" : null,
-      impressions: ig?.avgImpressions != null ? compact(ig.avgImpressions) : "—",
-      impressionsNote: ig?.impressionsEstimated ? "Estimate · views proxy" : null,
-      avgViews: ig ? `${compact(Math.round(ig.views / ig.days))}/day` : "—",
-      engagement: igRate != null ? rate(igRate) : meta && slug === "bluff" ? rate(metaRate) : "—",
-      note: ig
-        ? `${compact(ig.views)} views · ${ig.days} days${ig.postsLast60Breakdown ? ` · ${ig.postsLast60Breakdown.reels} Reels + ${ig.postsLast60Breakdown.stories} Stories` : ""}`
-        : null,
+      reach: ig ? compact(ig.views) : "—",
+      actions: igActions != null ? compact(igActions) : "—",
+      engagement: ig ? rate(igRate) : "—",
       filled: Boolean(ig),
     },
     {
       name: "Facebook",
       posts: fb?.postsLast60 != null ? fb.postsLast60.toLocaleString("en-US") : "—",
-      postsNote: fb?.postsEstimated ? "Estimate" : null,
-      impressions: fb?.avgImpressions != null ? compact(fb.avgImpressions) : "—",
-      impressionsNote: fb?.impressionsEstimated ? "Estimate · views proxy" : null,
-      avgViews: fb ? compact(fb.views) : "—",
-      engagement: fbRate != null ? rate(fbRate) : meta && slug === "bluff" ? rate(metaRate) : "—",
-      note: fb
-        ? `${fb.window}${fb.viewsEstimated ? " · views estimated" : ""}`
-        : null,
+      reach: fb ? compact(fb.views) : "—",
+      actions: fbActions != null ? compact(fbActions) : "—",
+      engagement: fb ? rate(fbRate) : "—",
       filled: Boolean(fb),
     },
   ];
@@ -120,139 +121,116 @@ export default function RecentPerformance({ slug }) {
   const posts = data.last60;
   const platforms = platformRows(slug, posts);
   const yt = youtubeImpressions(bothViews, bothVideos);
-  const pack = social[slug] || {};
-  const reachValue = pack.meta?.reach || pack.instagram?.viewers || null;
-  const reachLabel = pack.meta?.reach
-    ? `${compact(pack.meta.reach)} Meta reach · 90 days`
-    : pack.instagram?.viewers
-      ? `${compact(pack.instagram.viewers)} Instagram viewers`
-      : "Estimate pending";
 
   return (
-    <section className="card">
-      <div className="card-head">
-        <p className="kicker">YouTube performance</p>
-        <h2>Last two quarters</h2>
-        <p className="lead">
-          Q2 is April–June 2026. Q3 is July–September 2026. Average impressions use views as a proxy until Studio exports them.
-        </p>
-      </div>
-      <QuarterCards
-        columns={columns}
-        total={{
-          videos: bothVideos,
-          views: bothViews,
-          avgViews: Math.round(bothViews / bothVideos),
-          engagement: bothEngagement,
-        }}
-      />
-      <div className="wide-only table-scroll"><table>
-        <thead>
-          <tr>
-            <th></th>
-            <th className="num">Q2 Shorts</th>
-            <th className="num">Q2 Long-form</th>
-            <th className="num">Q3 Shorts</th>
-            <th className="num">Q3 Long-form</th>
-            <th className="num">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Videos posted</td>
-            {columns.map((col, index) => (
-              <td className="num" key={`videos-${index}`}>{col.videos.toLocaleString("en-US")}</td>
-            ))}
-            <td className="num">{bothVideos.toLocaleString("en-US")}</td>
-          </tr>
-          <tr>
-            <td>Views</td>
-            {columns.map((col, index) => (
-              <td className="num" key={`views-${index}`}>{compact(col.views)}</td>
-            ))}
-            <td className="num">{compact(bothViews)}</td>
-          </tr>
-          <tr>
-            <td>Average views</td>
-            {columns.map((col, index) => (
-              <td className="num" key={`avg-${index}`}>{compact(col.avgViews)}</td>
-            ))}
-            <td className="num">{compact(Math.round(bothViews / bothVideos))}</td>
-          </tr>
-          <tr>
-            <td>Engagement rate</td>
-            {columns.map((col, index) => (
-              <td className="num" key={`eng-${index}`}>{rate(col.engagement)}</td>
-            ))}
-            <td className="num">{rate(bothEngagement)}</td>
-          </tr>
-          <tr>
-            <td>Average impressions</td>
-            {columns.map((col, index) => (
-              <td className="num" key={`imp-${index}`}>{compact(col.avgViews)}</td>
-            ))}
-            <td className="num">{compact(yt.avgImpressions)}</td>
-          </tr>
-          <tr>
-            <td>Reach / viewers</td>
-            <td className="num" colSpan={5}>{reachLabel}</td>
-          </tr>
-        </tbody>
-      </table></div>
-      <p className="caption">
-        Average impressions on YouTube are estimated as average views until Studio impressions by quarter are available. Reach uses Meta reach when exported, otherwise Instagram viewers.
-      </p>
-
-      <h3>Posts in the last 60 days</h3>
-      <p className="lead">
-        August 9 through October 7, 2026 for YouTube. Instagram and Facebook post counts are measured for Bluff and estimated for partners from each creator’s YouTube posting rate versus Bluff.
-      </p>
-      <div className="platform-list narrow-only">
-        {platforms.map((platform) => (
-          <article key={platform.name}>
-            <strong>{platform.name}</strong>
-            <span><b>{platform.posts}</b> posts{platform.postsNote ? ` · ${platform.postsNote}` : ""}</span>
-            <span><b>{platform.impressions}</b> avg impressions{platform.impressionsNote ? ` · ${platform.impressionsNote}` : ""}</span>
-            <span><b>{platform.avgViews}</b> {platform.name === "Facebook" ? "views" : "avg views"}</span>
-            <span><b>{platform.engagement}</b> engagement</span>
-            {platform.note ? <span className="span-all">{platform.note}</span> : null}
-          </article>
-        ))}
-      </div>
-      <div className="wide-only table-scroll"><table>
-        <thead>
-          <tr>
-            <th>Platform</th>
-            <th className="num">Posts</th>
-            <th className="num">Avg impressions</th>
-            <th className="num">Views</th>
-            <th className="num">Engagement rate</th>
-          </tr>
-        </thead>
-        <tbody>
-          {platforms.map((platform) => (
-            <tr key={platform.name}>
-              <td>
-                {platform.name}
-                {platform.note ? <div className="metric-hint">{platform.note}</div> : null}
-              </td>
-              <td className="num">
-                {platform.posts}
-                {platform.postsNote ? <div className="metric-hint">{platform.postsNote}</div> : null}
-              </td>
-              <td className="num">
-                {platform.impressions}
-                {platform.impressionsNote ? <div className="metric-hint">{platform.impressionsNote}</div> : null}
-              </td>
-              <td className="num">{platform.avgViews}</td>
-              <td className="num">{platform.engagement}</td>
+    <>
+      <section className="card">
+        <div className="card-head">
+          <p className="kicker">YouTube performance</p>
+          <h2>Q2 + Q3 2026</h2>
+        </div>
+        <QuarterCards
+          columns={columns}
+          total={{
+            videos: bothVideos,
+            views: bothViews,
+            avgViews: Math.round(bothViews / bothVideos),
+            engagement: bothEngagement,
+          }}
+        />
+        <div className="wide-only table-scroll"><table>
+          <thead>
+            <tr>
+              <th></th>
+              <th className="num">Q2 Long-form</th>
+              <th className="num">Q2 Short form</th>
+              <th className="num">Q3 Long-form</th>
+              <th className="num">Q3 Short form</th>
+              <th className="num">Total</th>
             </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Videos posted</td>
+              {columns.map((col, index) => (
+                <td className="num" key={`videos-${index}`}>{col.videos.toLocaleString("en-US")}</td>
+              ))}
+              <td className="num">{bothVideos.toLocaleString("en-US")}</td>
+            </tr>
+            <tr>
+              <td>Views</td>
+              {columns.map((col, index) => (
+                <td className="num" key={`views-${index}`}>{compact(col.views)}</td>
+              ))}
+              <td className="num">{compact(bothViews)}</td>
+            </tr>
+            <tr>
+              <td>Average views</td>
+              {columns.map((col, index) => (
+                <td className="num" key={`avg-${index}`}>{compact(col.avgViews)}</td>
+              ))}
+              <td className="num">{compact(Math.round(bothViews / bothVideos))}</td>
+            </tr>
+            <tr>
+              <td>Engagement rate</td>
+              {columns.map((col, index) => (
+                <td className="num" key={`eng-${index}`}>{rate(col.engagement)}</td>
+              ))}
+              <td className="num">{rate(bothEngagement)}</td>
+            </tr>
+            <tr>
+              <td>Average impressions</td>
+              {columns.map((col, index) => (
+                <td className="num" key={`imp-${index}`}>{compact(col.avgViews)}</td>
+              ))}
+              <td className="num">{compact(yt.avgImpressions)}</td>
+            </tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section className="card">
+        <div className="card-head">
+          <p className="kicker">Posting frequency</p>
+          <h2>Posts in the last 60 days</h2>
+          <p className="lead">August 9th 2026 – October 9th 2026</p>
+        </div>
+        <div className="platform-list narrow-only">
+          {platforms.map((platform) => (
+            <article key={platform.name}>
+              <strong>{platform.name}</strong>
+              <span><b>{platform.posts}</b> posts</span>
+              <span><b>{platform.reach}</b> reach</span>
+              <span><b>{platform.actions}</b> likes / comments</span>
+              <span><b>{platform.engagement}</b> engagement</span>
+            </article>
           ))}
-        </tbody>
-      </table></div>
-      <p className="caption">
-        Estimated impressions use views as a 1:1 proxy. Bluff Instagram posts are 92 Reels + 192 Stories. Partner social post counts scale Bluff’s measured counts by YouTube volume.
-      </p>
-    </section>
+        </div>
+        <div className="wide-only table-scroll">
+          <table className="posts-table">
+            <thead>
+              <tr>
+                <th>Platform</th>
+                <th className="num">Posts</th>
+                <th className="num">Reach</th>
+                <th className="num">Likes / comments</th>
+                <th className="num">Engagement rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              {platforms.map((platform) => (
+                <tr key={platform.name}>
+                  <td>{platform.name}</td>
+                  <td className="num">{platform.posts}</td>
+                  <td className="num">{platform.reach}</td>
+                  <td className="num">{platform.actions}</td>
+                  <td className="num">{platform.engagement}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </>
   );
 }
