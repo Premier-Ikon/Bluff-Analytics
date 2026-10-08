@@ -48,6 +48,7 @@ export default function FormatSplit({ format }) {
   return (
     <section className="card">
       <div className="card-head">
+        <p className="kicker">Format mix</p>
         <h2>Shorts and long-form</h2>
         <p className="lead">
           A Short averages {compact(shorts.avgViews)} views. A long-form video averages {compact(longform.avgViews)} views. Counts are lifetime views on every public video.

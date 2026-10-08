@@ -200,7 +200,7 @@ export default function RecentPerformance({ slug }) {
         </tbody>
       </table></div>
       <p className="caption">
-        Average impressions on YouTube are estimated as average views until Studio impressions by quarter are available. Reach uses Meta reach for Bluff and Instagram viewers for partners when those exist.
+        Average impressions on YouTube are estimated as average views until Studio impressions by quarter are available. Reach uses Meta reach when exported, otherwise Instagram viewers.
       </p>
 
       <h3>Posts in the last 60 days</h3>

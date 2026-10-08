@@ -9,10 +9,32 @@ const montserrat = Montserrat({
 });
 
 export const metadata = {
+  metadataBase: new URL("https://partnerships.gotbluff.com"),
   title: "Partnership brief",
   description: "Verified YouTube results for Bluff, Brettski, and On Tilt Boys, with open cells for property results.",
   icons: {
     icon: "/favicon.ico",
+  },
+  openGraph: {
+    title: "Partnership brief",
+    description: "Verified YouTube results for Bluff, Brettski, and On Tilt Boys, with open cells for property results.",
+    url: "https://partnerships.gotbluff.com",
+    siteName: "Bluff",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Bluff",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Partnership brief",
+    description: "Verified YouTube results for Bluff, Brettski, and On Tilt Boys, with open cells for property results.",
+    images: ["/og-image.png"],
   },
 };
 

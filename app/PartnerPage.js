@@ -42,13 +42,38 @@ function prettyClock(value) {
   return value;
 }
 
+function studioWatchMonths(studioMonths, format) {
+  const mix = Object.fromEntries(format.months.map((item) => [item.key, item]));
+  return studioMonths.filter((item) => item.key >= "2025-10").map((item) => {
+    const row = mix[item.key] || { shortHours: 0, longHours: 0 };
+    const estimated = row.shortHours + row.longHours;
+    const scale = estimated > 0 ? item.hours / estimated : 0;
+    return {
+      key: item.key,
+      shortHours: row.shortHours * scale,
+      longHours: row.longHours * scale,
+    };
+  });
+}
+
+/**
+ * Shared creator dashboard shell.
+ * Bluff, Brettski, and On Tilt Boys all render this exact section order.
+ */
 export default function PartnerPage({ partner }) {
   const format = formatMonths[partner.slug];
-  const hours = splitWatchHours(partner.estimatedHours, format);
+  const watchHours = partner.watchHours ?? partner.estimatedHours;
+  const watchYears = partner.watchYears ?? partner.estimatedYears;
+  const watchMeasured = Boolean(partner.watchMeasured);
+  const hours = splitWatchHours(watchHours, format);
+  const source = watchMeasured ? "Studio" : "Estimate";
   const leadProperty = partner.properties[0];
   const other = partner.properties.slice(1);
   const otherViews = other.reduce((sum, row) => sum + row.views, 0);
-  const otherVideos = other.reduce((sum, row) => sum + row.videos, 0);
+  const titleMentions = partner.properties.reduce((sum, row) => sum + row.videos, 0);
+  const chartMonths = watchMeasured && partner.studioMonths
+    ? studioWatchMonths(partner.studioMonths, format)
+    : format.months;
 
   return (
     <>
@@ -68,6 +93,7 @@ export default function PartnerPage({ partner }) {
           Download PDF
         </button>
       </header>
+
       <main className="page">
         <p className="kicker page-kicker">YouTube lifetime</p>
         <section className="metrics" aria-label="Channel totals">
@@ -78,18 +104,20 @@ export default function PartnerPage({ partner }) {
           </article>
           <article className="metric">
             <div className="metric-label">Watch time</div>
-            <div className="metric-value">{compact(partner.estimatedHours)}</div>
-            <div className="metric-hint">Estimate · {partner.estimatedYears.toLocaleString("en-US")} years of viewing</div>
+            <div className="metric-value">{compact(watchHours)}</div>
+            <div className="metric-hint">
+              {source} · {watchYears.toLocaleString("en-US")} years of viewing
+            </div>
           </article>
           <article className="metric">
             <div className="metric-label">Long-form</div>
             <div className="metric-value">{compact(hours.longHours)}</div>
-            <div className="metric-hint">Estimate · {hours.longShare}% of watch time</div>
+            <div className="metric-hint">{source} · {hours.longShare}% of watch time</div>
           </article>
           <article className="metric">
             <div className="metric-label">Shorts</div>
             <div className="metric-value">{compact(hours.shortHours)}</div>
-            <div className="metric-hint">Estimate · {hours.shortShare}% of watch time</div>
+            <div className="metric-hint">{source} · {hours.shortShare}% of watch time</div>
           </article>
         </section>
 
@@ -102,120 +130,130 @@ export default function PartnerPage({ partner }) {
         {/* <section className="card">
           <div className="card-head">
             <h2>Where the audience watches</h2>
-            <p className="lead">
-              Darker states have more watch time. California, Texas, and Florida lead. Nevada is seventh. The colors follow Bluff’s measured state mix.
-            </p>
+            <p className="lead">U.S. watch-time map. Same layout on every creator tab.</p>
           </div>
-          <AudienceMap
-            states={partner.states}
-            usViews={partner.estimatedUsViews}
-            usHours={partner.estimatedUsHours}
-            estimated
-          />
-          <p className="caption">
-            State shares are Bluff’s U.S. mix, scaled to this channel. Hover a state for its estimated hours.
-          </p>
+          <AudienceMap ... />
         </section> */}
 
         <section className="card">
           <div className="card-head">
+            <p className="kicker">Watch time trend</p>
             <h2>Hours watched each month</h2>
             <p className="lead">
-              Estimated hours on videos posted from October 2025 through October 2026. Red is Shorts and black is long-form. A short is capped at its own length.
+              {watchMeasured
+                ? "Measured hours from October 2025 through October 2026. Red is Shorts and black is long-form, split by the videos posted that month."
+                : "Estimated hours on videos posted from October 2025 through October 2026. Red is Shorts and black is long-form. A short is capped at its own length."}
             </p>
           </div>
-          <WatchChart months={formatMonths[partner.slug].months} />
-          <div className="table-scroll"><table className="after-chart">
-            <thead>
-              <tr>
-                <th>Year</th>
-                <th className="num">Watch time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {yearRows(partner.years).map((year) => (
-                <tr key={year.year}>
-                  <td>{year.year === "2026" ? "2026 through Oct 7" : year.year}</td>
-                  <td className="num">{compact(year.hours)} hours</td>
+          <WatchChart months={chartMonths} />
+          <div className="table-scroll">
+            <table className="after-chart">
+              <thead>
+                <tr>
+                  <th>Year</th>
+                  <th className="num">Watch time</th>
                 </tr>
-              ))}
-            </tbody>
-          </table></div>
+              </thead>
+              <tbody>
+                {yearRows(partner.years).map((year) => (
+                  <tr key={year.year}>
+                    <td>{year.year === "2026" ? "2026 through Oct 7" : year.year}</td>
+                    <td className="num">{compact(year.hours)} hours</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="card">
           <div className="card-head">
+            <p className="kicker">Casino publicity</p>
             <h2>What a property gets on camera</h2>
             <p className="lead">
-              Counted when the title names the casino. {partner.shorts.toLocaleString("en-US")} of the public videos are Shorts. {partner.videos.toLocaleString("en-US")} public videos in total.
+              {`Counted when the title names the casino${partner.propertyNote ? ` or ${partner.propertyNote}` : ""}. ${partner.shorts.toLocaleString("en-US")} of the public videos are Shorts. ${partner.videos.toLocaleString("en-US")} public videos in total.`}
             </p>
           </div>
           <div className="band">
             <article className="mini">
               <div className="mini-label">{leadProperty.name}</div>
               <div className="mini-value">{compact(leadProperty.views)}</div>
-              <div className="metric-hint">Views on {leadProperty.videos.toLocaleString("en-US")} {leadProperty.videos === 1 ? "video" : "videos"} that name it in the title.</div>
+              <div className="metric-hint">
+                Views on {leadProperty.videos.toLocaleString("en-US")}{" "}
+                {leadProperty.videos === 1 ? "video" : "videos"} that name it.
+              </div>
             </article>
             <article className="mini">
               <div className="mini-label">Other properties</div>
               <div className="mini-value">{compact(otherViews)}</div>
-              <div className="metric-hint">Views across {other.length} more {other.length === 1 ? "casino" : "casinos"} named in a title.</div>
+              <div className="metric-hint">
+                Views across {other.length} more {other.length === 1 ? "casino" : "casinos"} named on camera.
+              </div>
             </article>
             <article className="mini">
               <div className="mini-label">Title mentions</div>
-              <div className="mini-value">{otherVideos + leadProperty.videos}</div>
+              <div className="mini-value">{titleMentions.toLocaleString("en-US")}</div>
               <div className="metric-hint">Videos whose title names one of these casinos.</div>
             </article>
           </div>
-          <div className="table-scroll"><table>
-            <thead>
-              <tr>
-                <th>Property</th>
-                <th>Market</th>
-                <th className="num">Videos</th>
-                <th className="num">Views</th>
-              </tr>
-            </thead>
-            <tbody>
-              {partner.properties.map((row) => (
-                <tr key={row.name}>
-                  <td>{row.name}</td>
-                  <td>{row.where}</td>
-                  <td className="num">{row.videos.toLocaleString("en-US")}</td>
-                  <td className="num">{compact(row.views)}</td>
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Market</th>
+                  <th className="num">Videos</th>
+                  <th className="num">Views</th>
                 </tr>
-              ))}
-            </tbody>
-          </table></div>
+              </thead>
+              <tbody>
+                {partner.properties.map((row) => (
+                  <tr key={row.name}>
+                    <td>{row.name}</td>
+                    <td>{row.where}</td>
+                    <td className="num">{row.videos.toLocaleString("en-US")}</td>
+                    <td className="num">{compact(row.views)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="card">
           <div className="card-head">
+            <p className="kicker">Top content</p>
             <h2>Most hours watched</h2>
-            <p className="lead">Watch time is estimated from the length of each video, capped at 4 minutes 26 seconds.</p>
+            <p className="lead">
+              {watchMeasured
+                ? "Measured watch time from YouTube Studio."
+                : "Watch time is estimated from the length of each video, capped at 4 minutes 26 seconds."}
+            </p>
           </div>
-          <div className="table-scroll"><table>
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Published</th>
-                <th className="num">Views</th>
-                <th className="num">Watch time</th>
-                <th className="num">Avg view</th>
-              </tr>
-            </thead>
-            <tbody>
-              {partner.top.map((row) => (
-                <tr key={row.title}>
-                  <td className="title">{row.title}</td>
-                  <td>{row.published}</td>
-                  <td className="num">{compact(row.views)}</td>
-                  <td className="num">{compact(row.hours)} h</td>
-                  <td className="num">{prettyClock(row.avgDuration)}</td>
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Published</th>
+                  <th className="num">Views</th>
+                  <th className="num">Watch time</th>
+                  <th className="num">Avg view</th>
                 </tr>
-              ))}
-            </tbody>
-          </table></div>
+              </thead>
+              <tbody>
+                {partner.top.map((row) => (
+                  <tr key={row.title}>
+                    <td className="title">{row.title}</td>
+                    <td>{row.published}</td>
+                    <td className="num">{compact(row.views)}</td>
+                    <td className="num">{compact(row.hours)} h</td>
+                    <td className="num">{prettyClock(row.avgDuration)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       </main>
     </>
