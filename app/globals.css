@@ -794,14 +794,14 @@ td.missing,
 
 .posts-table th:first-child,
 .posts-table td:first-child {
-  width: 22%;
+  width: 18%;
 }
 
 .posts-table th.num,
 .posts-table td.num {
-  width: 19.5%;
-  padding-left: 12px;
-  padding-right: 8px;
+  width: 16.4%;
+  padding-left: 10px;
+  padding-right: 6px;
   text-align: right;
   white-space: nowrap;
 }

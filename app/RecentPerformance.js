@@ -120,22 +120,23 @@ function platformRows(slug, posts) {
         ? engagementRate(fb.engagement, fb.views)
         : null;
   const metaRate = meta ? engagementRate(meta.interactions, meta.views) : null;
+  const igRateUsed = igRate ?? (slug === "bluff" ? metaRate : null);
+  const fbRateUsed = fbRate ?? (slug === "bluff" ? metaRate : null);
   const ytActions = actionsFromRate(posts.all.views, ytRate);
   const igActions =
     ig?.interactions != null
       ? ig.interactions
-      : ig && (igRate != null || metaRate != null)
-        ? actionsFromRate(ig.views, igRate ?? metaRate)
+      : ig && igRateUsed != null
+        ? actionsFromRate(ig.views, igRateUsed)
         : null;
   const fbActions =
-    fb && fbRate != null
-      ? actionsFromRate(fb.views, fbRate)
-      : fb?.engagement != null
-        ? fb.engagement
+    fb?.engagement != null && slug !== "brettski"
+      ? fb.engagement
+      : fb && fbRateUsed != null
+        ? actionsFromRate(fb.views, fbRateUsed)
         : null;
-  const igEng = igRate != null ? rate(igRate) : meta && slug === "bluff" ? rate(metaRate) : "—";
-  const fbEng =
-    fbRate != null ? rate(fbRate) : meta && slug === "bluff" ? rate(metaRate) : "—";
+  const igEng = igRateUsed != null ? rate(igRateUsed) : "—";
+  const fbEng = fbRateUsed != null ? rate(fbRateUsed) : "—";
 
   return [
     {
@@ -143,6 +144,7 @@ function platformRows(slug, posts) {
       posts: posts.all.videos.toLocaleString("en-US"),
       reach: compact(posts.all.views),
       actions: ytActions != null ? compact(ytActions) : "—",
+      avgImpressions: compact(posts.all.avgViews),
       engagement: rate(ytRate),
       filled: true,
     },
@@ -151,6 +153,7 @@ function platformRows(slug, posts) {
       posts: ig?.postsLast60 != null ? ig.postsLast60.toLocaleString("en-US") : "—",
       reach: ig ? compact(ig.views) : "—",
       actions: igActions != null ? compact(igActions) : "—",
+      avgImpressions: ig?.avgImpressions != null ? compact(ig.avgImpressions) : "—",
       engagement: igEng,
       filled: Boolean(ig),
     },
@@ -159,6 +162,7 @@ function platformRows(slug, posts) {
       posts: fb?.postsLast60 != null ? fb.postsLast60.toLocaleString("en-US") : "—",
       reach: fb ? compact(fb.views) : "—",
       actions: fbActions != null ? compact(fbActions) : "—",
+      avgImpressions: fb?.avgImpressions != null ? compact(fb.avgImpressions) : "—",
       engagement: fbEng,
       filled: Boolean(fb),
     },
@@ -263,6 +267,7 @@ export default function RecentPerformance({ slug }) {
               <span><b>{platform.posts}</b> posts</span>
               <span><b>{platform.reach}</b> reach</span>
               <span><b>{platform.actions}</b> likes / comments</span>
+              <span><b>{platform.avgImpressions}</b> avg impressions</span>
               <span><b>{platform.engagement}</b> engagement</span>
             </article>
           ))}
@@ -275,6 +280,7 @@ export default function RecentPerformance({ slug }) {
                 <th className="num">Posts</th>
                 <th className="num">Reach</th>
                 <th className="num">Likes / comments</th>
+                <th className="num">Avg impressions</th>
                 <th className="num">Engagement rate</th>
               </tr>
             </thead>
@@ -290,6 +296,7 @@ export default function RecentPerformance({ slug }) {
                   <td className="num">{platform.posts}</td>
                   <td className="num">{platform.reach}</td>
                   <td className="num">{platform.actions}</td>
+                  <td className="num">{platform.avgImpressions}</td>
                   <td className="num">{platform.engagement}</td>
                 </tr>
               ))}
