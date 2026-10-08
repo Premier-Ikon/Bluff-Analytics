@@ -92,7 +92,7 @@ export default function PartnerPage({ partner }) {
       <main className="page">
         <section className="metrics" aria-label="Channel totals">
           <article className="metric">
-            <div className="metric-label">Views</div>
+            <div className="metric-label">Lifetime views</div>
             <div className="metric-value">{compact(partner.views)}</div>
             <div className="metric-hint">{compact(partner.subscribers)} subscribers</div>
           </article>

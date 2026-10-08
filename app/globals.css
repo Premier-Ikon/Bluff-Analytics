@@ -366,6 +366,30 @@ h2 {
 
 .page-kicker { margin: 0 0 10px; }
 
+.kicker-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.platform-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.platform-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.platform-list .platform-name {
+  grid-column: 1 / -1;
+}
+
 .hero .kicker { color: rgba(255, 255, 255, 0.55); }
 
 .section-label {
