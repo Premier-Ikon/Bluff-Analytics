@@ -604,6 +604,25 @@ td.missing,
 
 .platform-list .span-all { grid-column: 1 / -1; }
 
+.social-formats .metric-value {
+  margin-top: 4px;
+  font-size: 24px;
+}
+
+.social-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 4px 0 12px;
+}
+
+.social-split .q-card { display: block; }
+
+@media (max-width: 640px) {
+  .social-split { grid-template-columns: 1fr; }
+  .social-formats { grid-template-columns: 1fr 1fr; }
+}
+
 .plan,
 .open-list {
   margin: 0 0 12px;

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { recent } from "../data/recent";
+import { engagementRate, social } from "../data/social";
 
 const compact = (n) => {
   if (n >= 1_000_000_000) {
@@ -60,6 +61,10 @@ function quarterStats(slug) {
 }
 
 const quarterViews = creators.reduce((sum, creator) => sum + quarterStats(creator.slug).views, 0);
+const instagramViews =
+  (social.brettski.instagram?.views || 0) + (social.ontilt.instagram?.views || 0);
+const instagramViewers =
+  (social.brettski.instagram?.viewers || 0) + (social.ontilt.instagram?.viewers || 0);
 
 const blanks = [
   "Total content views",
@@ -75,7 +80,8 @@ const openItems = [
   "Views in the first 7 days and the first 30 days for each Gila River video that actually published, by platform.",
   "Views still coming in at 30, 60, and 90 days after the visit.",
   "Photos of the crowd, the creators filming, fan interactions, and casino branding.",
-  "Instagram, Facebook, and TikTok post counts, views, reach, impressions, and engagement for each creator.",
+  "Bluff Instagram, Facebook, and TikTok. Brettski Facebook and TikTok. On Tilt Boys TikTok.",
+  "Instagram and Facebook post counts in the last 60 days, and average impressions / average reach for every platform.",
   "YouTube average impressions for the last two quarters, from a Studio export. Lifetime impressions are not a substitute.",
   "Which contracted Gila River videos have actually been published, kept separate from the package that was agreed.",
 ];
@@ -115,7 +121,7 @@ export default function Page() {
             <div className="metric-label">1 · Reach</div>
             <h2>How many people will this reach?</h2>
             <p>
-              {compact(quarterViews)} YouTube views on videos these three channels posted in April through September 2026. Reach for that period is unavailable.
+              {compact(quarterViews)} YouTube views on videos these three channels posted in April through September 2026. Brettski and On Tilt Boys add {compact(instagramViews)} Instagram views and {compact(instagramViewers)} Instagram viewers in the screenshot windows. Reach is still unavailable.
             </p>
           </article>
           <article>
@@ -184,22 +190,36 @@ export default function Page() {
           <div className="card-head">
             <h2>Creator performance by channel</h2>
             <p className="lead">
-              Last two quarters are April through September 2026. Posts are August 9 through October 7. YouTube is filled from public video data. Every other platform is open.
+              YouTube covers April through September 2026. Instagram for Brettski is 90 days. Instagram for On Tilt Boys is 60 days. Facebook for On Tilt Boys is 28 days. Bluff social and TikTok stay open.
             </p>
           </div>
           <div className="creator-cards">
             {creators.map((creator) => {
               const stats = quarterStats(creator.slug);
+              const ig = social[creator.slug]?.instagram;
+              const fb = social[creator.slug]?.facebook;
+              const igRate = ig ? engagementRate(ig.interactions, ig.views) : null;
               return (
                 <article className="q-card" key={creator.slug}>
                   <h3><Link href={creator.href}>{creator.name}</Link></h3>
                   <dl>
                     <div><dt>YouTube views</dt><dd>{compact(stats.views)}</dd></div>
-                    <div><dt>Engagement rate</dt><dd>{rate(stats.engagement)}</dd></div>
-                    <div><dt>Posts, 60 days</dt><dd>{stats.posts.toLocaleString("en-US")}</dd></div>
+                    <div><dt>YouTube engagement</dt><dd>{rate(stats.engagement)}</dd></div>
+                    <div><dt>YouTube posts, 60 days</dt><dd>{stats.posts.toLocaleString("en-US")}</dd></div>
+                    <div>
+                      <dt>Instagram views</dt>
+                      <dd className={ig ? "" : "missing"}>{ig ? compact(ig.views) : "Unavailable"}</dd>
+                    </div>
+                    <div>
+                      <dt>Instagram engagement</dt>
+                      <dd className={igRate != null ? "" : "missing"}>{igRate != null ? rate(igRate) : "Unavailable"}</dd>
+                    </div>
+                    <div>
+                      <dt>Facebook views</dt>
+                      <dd className={fb ? "" : "missing"}>{fb ? compact(fb.views) : "Unavailable"}</dd>
+                    </div>
                     <div><dt>Average reach</dt><dd className="missing">Unavailable</dd></div>
                     <div><dt>Average impressions</dt><dd className="missing">Unavailable</dd></div>
-                    <div><dt>Instagram, Facebook, TikTok</dt><dd className="missing">Unavailable</dd></div>
                   </dl>
                 </article>
               );
@@ -224,7 +244,7 @@ export default function Page() {
                 ))}
               </tr>
               <tr>
-                <td>Engagement rate</td>
+                <td>YouTube engagement rate</td>
                 {creators.map((creator) => (
                   <td className="num" key={creator.slug}>{rate(quarterStats(creator.slug).engagement)}</td>
                 ))}
@@ -235,7 +255,52 @@ export default function Page() {
                   <td className="num" key={creator.slug}>{quarterStats(creator.slug).posts.toLocaleString("en-US")}</td>
                 ))}
               </tr>
-              {["Average reach", "Average impressions", "Instagram", "Facebook", "TikTok"].map((label) => (
+              <tr>
+                <td>Instagram views</td>
+                {creators.map((creator) => {
+                  const ig = social[creator.slug]?.instagram;
+                  return (
+                    <td className={ig ? "num" : "num missing"} key={creator.slug}>
+                      {ig ? `${compact(ig.views)} · ${ig.days}d` : "Unavailable"}
+                    </td>
+                  );
+                })}
+              </tr>
+              <tr>
+                <td>Instagram engagement rate</td>
+                {creators.map((creator) => {
+                  const ig = social[creator.slug]?.instagram;
+                  const value = ig ? engagementRate(ig.interactions, ig.views) : null;
+                  return (
+                    <td className={value != null ? "num" : "num missing"} key={creator.slug}>
+                      {value != null ? rate(value) : "Unavailable"}
+                    </td>
+                  );
+                })}
+              </tr>
+              <tr>
+                <td>Instagram viewers</td>
+                {creators.map((creator) => {
+                  const ig = social[creator.slug]?.instagram;
+                  return (
+                    <td className={ig ? "num" : "num missing"} key={creator.slug}>
+                      {ig ? compact(ig.viewers) : "Unavailable"}
+                    </td>
+                  );
+                })}
+              </tr>
+              <tr>
+                <td>Facebook views</td>
+                {creators.map((creator) => {
+                  const fb = social[creator.slug]?.facebook;
+                  return (
+                    <td className={fb ? "num" : "num missing"} key={creator.slug}>
+                      {fb ? `${compact(fb.views)} · ${fb.days}d` : "Unavailable"}
+                    </td>
+                  );
+                })}
+              </tr>
+              {["Average reach", "Average impressions", "TikTok"].map((label) => (
                 <tr key={label}>
                   <td>{label}</td>
                   {creators.map((creator) => (
@@ -246,7 +311,7 @@ export default function Page() {
             </tbody>
           </table></div>
           <p className="caption">
-            YouTube views are on videos posted in those two quarters. Engagement rate is likes plus comments, divided by views. Shorts and long-form are broken out on each creator page. Average reach and average impressions are unavailable in this export.
+            YouTube engagement is likes plus comments, divided by views. Instagram engagement is interactions divided by views. Instagram viewers are unique people who viewed, not reach. Average reach and average impressions stay Unavailable.
           </p>
           <div className="table-scroll"><table>
             <thead>

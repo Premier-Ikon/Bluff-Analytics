@@ -1,6 +1,6 @@
 "use client";
 
-import AudienceMap from "../AudienceMap";
+// import AudienceMap from "../AudienceMap";
 import FormatSplit, { splitWatchHours } from "../FormatSplit";
 import RecentPerformance from "../RecentPerformance";
 import WatchChart, { yearRows } from "../WatchChart";
@@ -119,7 +119,7 @@ export default function Page() {
 
         <FormatSplit format={formatMonths.bluff} />
 
-        <section className="card">
+        {/* <section className="card">
           <div className="card-head">
             <h2>Where the audience watches</h2>
             <p className="lead">
@@ -130,7 +130,7 @@ export default function Page() {
           <p className="caption">
             State shares are of YouTube’s U.S. total. Hover a state for its hours.
           </p>
-        </section>
+        </section> */}
 
         <section className="card">
           <div className="card-head">

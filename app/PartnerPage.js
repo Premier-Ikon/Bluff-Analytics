@@ -1,8 +1,9 @@
 "use client";
 
-import AudienceMap from "./AudienceMap";
+// import AudienceMap from "./AudienceMap";
 import FormatSplit, { splitWatchHours } from "./FormatSplit";
 import RecentPerformance from "./RecentPerformance";
+import SocialChannels from "./SocialChannels";
 import WatchChart, { yearRows } from "./WatchChart";
 import { formatMonths } from "../data/formats";
 
@@ -98,9 +99,11 @@ export default function PartnerPage({ partner }) {
 
         <RecentPerformance slug={partner.slug} />
 
+        <SocialChannels slug={partner.slug} />
+
         <FormatSplit format={format} />
 
-        <section className="card">
+        {/* <section className="card">
           <div className="card-head">
             <h2>Where the audience watches</h2>
             <p className="lead">
@@ -116,7 +119,7 @@ export default function PartnerPage({ partner }) {
           <p className="caption">
             State shares are Bluff’s U.S. mix, scaled to this channel. Hover a state for its estimated hours.
           </p>
-        </section>
+        </section> */}
 
         <section className="card">
           <div className="card-head">

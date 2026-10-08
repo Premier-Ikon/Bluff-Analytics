@@ -1,6 +1,7 @@
 "use client";
 
 import { recent } from "../data/recent";
+import { engagementRate, social } from "../data/social";
 
 const compact = (n) => {
   if (n >= 1_000_000) {
@@ -57,6 +58,53 @@ function QuarterCards({ columns, total }) {
   );
 }
 
+function platformRows(slug, posts) {
+  const pack = social[slug] || {};
+  const ig = pack.instagram;
+  const fb = pack.facebook;
+  const igRate = ig ? engagementRate(ig.interactions, ig.views) : null;
+  const fbRate = fb ? engagementRate(fb.engagement, fb.views) : null;
+
+  return [
+    {
+      name: "YouTube",
+      posts: posts.all.videos.toLocaleString("en-US"),
+      impressions: "Unavailable",
+      avgViews: compact(posts.all.avgViews),
+      engagement: rate(posts.all.engagement),
+      note: null,
+      filled: true,
+    },
+    {
+      name: "Instagram",
+      posts: ig?.postsLast60 != null ? ig.postsLast60.toLocaleString("en-US") : "Unavailable",
+      impressions: "Unavailable",
+      avgViews: ig ? `${compact(Math.round(ig.views / ig.days))}/day` : "Unavailable",
+      engagement: igRate != null ? rate(igRate) : "Unavailable",
+      note: ig ? `${compact(ig.views)} views · ${ig.days} days · ${ig.window}` : null,
+      filled: Boolean(ig),
+    },
+    {
+      name: "Facebook",
+      posts: "Unavailable",
+      impressions: "Unavailable",
+      avgViews: fb ? compact(fb.views) : "Unavailable",
+      engagement: fbRate != null ? rate(fbRate) : "Unavailable",
+      note: fb ? `${fb.window} · ${compact(fb.engagement)} engagement actions` : null,
+      filled: Boolean(fb),
+    },
+    {
+      name: "TikTok",
+      posts: "Unavailable",
+      impressions: "Unavailable",
+      avgViews: "Unavailable",
+      engagement: "Unavailable",
+      note: null,
+      filled: false,
+    },
+  ];
+}
+
 export default function RecentPerformance({ slug }) {
   const data = recent[slug];
   const columns = [...cells(data.q2), ...cells(data.q3)];
@@ -66,6 +114,7 @@ export default function RecentPerformance({ slug }) {
     (data.q2.all.engagement * data.q2.all.views + data.q3.all.engagement * data.q3.all.views) /
     bothViews;
   const posts = data.last60;
+  const platforms = platformRows(slug, posts);
 
   return (
     <section className="card">
@@ -140,22 +189,25 @@ export default function RecentPerformance({ slug }) {
 
       <h3>Posts in the last 60 days</h3>
       <p className="lead">
-        August 9 through October 7, 2026. YouTube posts are {posts.shorts.videos.toLocaleString("en-US")} Shorts and {posts.longform.videos.toLocaleString("en-US")} long-form.
+        August 9 through October 7, 2026 for YouTube. Instagram and Facebook windows follow the screenshots for that creator.
       </p>
       <div className="platform-list narrow-only">
-          <article>
-            <strong>YouTube</strong>
-            <span><b>{posts.all.videos.toLocaleString("en-US")}</b> posts</span>
-            <span><b>{compact(posts.all.avgViews)}</b> avg views</span>
-            <span><b>{rate(posts.all.engagement)}</b> engagement</span>
-            <span>Impressions unavailable</span>
-          </article>
-          {["Instagram", "Facebook", "TikTok"].map((platform) => (
-            <article key={platform}>
-              <strong>{platform}</strong>
+        {platforms.map((platform) => (
+          <article key={platform.name}>
+            <strong>{platform.name}</strong>
+            {platform.filled ? (
+              <>
+                <span><b>{platform.posts}</b> posts</span>
+                <span><b>{platform.avgViews}</b> {platform.name === "Facebook" ? "views" : "avg views"}</span>
+                <span><b>{platform.engagement}</b> engagement</span>
+                <span>{platform.impressions === "Unavailable" ? "Impressions unavailable" : platform.impressions}</span>
+                {platform.note ? <span className="span-all">{platform.note}</span> : null}
+              </>
+            ) : (
               <span className="span-all">Posts, views, impressions, and engagement are unavailable</span>
-            </article>
-          ))}
+            )}
+          </article>
+        ))}
       </div>
       <div className="wide-only table-scroll"><table>
         <thead>
@@ -163,31 +215,27 @@ export default function RecentPerformance({ slug }) {
             <th>Platform</th>
             <th className="num">Posts</th>
             <th className="num">Avg impressions</th>
-            <th className="num">Avg views</th>
+            <th className="num">Views</th>
             <th className="num">Engagement rate</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>YouTube</td>
-            <td className="num">{posts.all.videos.toLocaleString("en-US")}</td>
-            <td className="num missing">Unavailable</td>
-            <td className="num">{compact(posts.all.avgViews)}</td>
-            <td className="num">{rate(posts.all.engagement)}</td>
-          </tr>
-          {["Instagram", "Facebook", "TikTok"].map((platform) => (
-            <tr key={platform}>
-              <td>{platform}</td>
-              <td className="num missing">Unavailable</td>
-              <td className="num missing">Unavailable</td>
-              <td className="num missing">Unavailable</td>
-              <td className="num missing">Unavailable</td>
+          {platforms.map((platform) => (
+            <tr key={platform.name}>
+              <td>
+                {platform.name}
+                {platform.note ? <div className="metric-hint">{platform.note}</div> : null}
+              </td>
+              <td className={platform.posts === "Unavailable" ? "num missing" : "num"}>{platform.posts}</td>
+              <td className="num missing">{platform.impressions}</td>
+              <td className={platform.avgViews === "Unavailable" ? "num missing" : "num"}>{platform.avgViews}</td>
+              <td className={platform.engagement === "Unavailable" ? "num missing" : "num"}>{platform.engagement}</td>
             </tr>
           ))}
         </tbody>
       </table></div>
       <p className="caption">
-        Shares and saves are unavailable. YouTube’s engagement rate uses likes and comments only.
+        Instagram post counts were not in the screenshots. Shares and saves are unavailable. YouTube’s engagement rate uses likes and comments only. Instagram uses interactions divided by views.
       </p>
     </section>
   );
