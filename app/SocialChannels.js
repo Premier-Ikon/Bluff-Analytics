@@ -21,77 +21,159 @@ const rate = (value) => (value == null ? "Unavailable" : `${value.toFixed(2)}%`)
 export default function SocialChannels({ slug }) {
   const pack = social[slug];
   if (!pack) return null;
-  const { instagram: ig, facebook: fb, mgmRewards } = pack;
-  if (!ig && !fb && !mgmRewards) return null;
+  const { meta, instagram: ig, facebook: fb, mgmRewards } = pack;
+  if (!meta && !ig && !fb && !mgmRewards) return null;
 
-  const igRate = ig ? engagementRate(ig.interactions, ig.views) : null;
+  const igRate = ig?.interactions != null ? engagementRate(ig.interactions, ig.views) : null;
+  const metaRate = meta ? engagementRate(meta.interactions, meta.views) : null;
+  const fbRate = fb?.engagement != null ? engagementRate(fb.engagement, fb.views) : null;
 
   return (
     <section className="card">
       <div className="card-head">
+        <p className="kicker">Meta social</p>
         <h2>Instagram and Facebook</h2>
         <p className="lead">
-          Taken from Insights and Professional dashboard screenshots. Views, viewers, and interactions are separate. Reach and impressions stay Unavailable when the screenshot did not show them.
+          Views, reach, and interactions stay separate. Estimated impressions use views as a proxy.
         </p>
       </div>
 
+      {meta ? (
+        <>
+          <h3>Meta combined · Instagram and Facebook</h3>
+          <div className="metrics package">
+            <article className="metric">
+              <div className="metric-label">Views</div>
+              <div className="metric-value">{compact(meta.views)}</div>
+              <div className="metric-hint">
+                {meta.window} · {meta.viewsChangePct != null ? `+${meta.viewsChangePct}%` : `${meta.days} days`}
+              </div>
+            </article>
+            <article className="metric">
+              <div className="metric-label">Reach</div>
+              <div className="metric-value">{compact(meta.reach)}</div>
+              <div className="metric-hint">
+                Unique people in the window
+                {meta.reachChangePct != null ? ` · +${meta.reachChangePct}%` : ""}
+              </div>
+            </article>
+            <article className="metric">
+              <div className="metric-label">Interactions</div>
+              <div className="metric-value">{compact(meta.interactions)}</div>
+              <div className="metric-hint">
+                {rate(metaRate)} of views
+                {meta.interactionsChangePct != null ? ` · +${meta.interactionsChangePct}%` : ""}
+              </div>
+            </article>
+            <article className="metric">
+              <div className="metric-label">Est. impressions</div>
+              <div className="metric-value">{compact(meta.impressions)}</div>
+              <div className="metric-hint">Estimate · views used as proxy</div>
+            </article>
+          </div>
+          <p className="caption">{meta.source}. Reach is Meta’s period total (5.1M), not the sum of the daily reach CSV.</p>
+        </>
+      ) : null}
+
       {ig ? (
         <>
+          <h3>Instagram</h3>
           <div className="metrics package">
             <article className="metric">
               <div className="metric-label">Instagram views</div>
               <div className="metric-value">{compact(ig.views)}</div>
-              <div className="metric-hint">{ig.window} · {ig.days} days</div>
+              <div className="metric-hint">
+                {ig.window} · {ig.days} days
+                {ig.viewsChangePct != null ? ` · +${ig.viewsChangePct}%` : ""}
+              </div>
             </article>
             <article className="metric">
               <div className="metric-label">Interactions</div>
-              <div className="metric-value">{compact(ig.interactions)}{ig.interactionsExact === false ? "+" : ""}</div>
-              <div className="metric-hint">{rate(igRate)} of views · last digits cut off in the screenshot</div>
+              <div className="metric-value">
+                {ig.interactions != null
+                  ? `${compact(ig.interactions)}${ig.interactionsExact === false ? "+" : ""}`
+                  : "—"}
+              </div>
+              <div className="metric-hint">
+                {ig.interactions != null
+                  ? `${rate(igRate)} of views${ig.interactionsExact === false ? " · last digits cut off in the screenshot" : ""}`
+                  : "Shown in Meta combined above"}
+              </div>
             </article>
             <article className="metric">
-              <div className="metric-label">Viewers</div>
-              <div className="metric-value">{compact(ig.viewers)}</div>
-              <div className="metric-hint">Unique people who viewed · not labeled reach</div>
+              <div className="metric-label">{ig.reach != null ? "Reach" : ig.viewers != null ? "Viewers" : "Organic views"}</div>
+              <div className="metric-value">
+                {ig.reach != null
+                  ? compact(ig.reach)
+                  : ig.viewers != null
+                    ? compact(ig.viewers)
+                    : ig.organicViews != null
+                      ? compact(ig.organicViews)
+                      : "—"}
+              </div>
+              <div className="metric-hint">
+                {ig.reach != null
+                  ? "Unique people · Instagram"
+                  : ig.viewers != null
+                    ? "Unique people who viewed · not labeled reach"
+                    : ig.adViews != null
+                      ? `${compact(ig.adViews)} from ads`
+                      : "Unavailable"}
+              </div>
             </article>
             <article className="metric">
               <div className="metric-label">{ig.followers ? "Followers" : "Net followers"}</div>
               <div className="metric-value">
-                {ig.followers ? compact(ig.followers) : `+${compact(ig.netFollowers)}`}
+                {ig.followers
+                  ? compact(ig.followers)
+                  : ig.netFollowers != null
+                    ? `+${compact(ig.netFollowers)}`
+                    : "—"}
               </div>
               <div className="metric-hint">
                 {ig.followers
                   ? `+${compact(ig.netFollowers)} in window · +${ig.followerGrowthPct}%`
-                  : `Gained in the ${ig.days}-day window`}
+                  : ig.netFollowers != null
+                    ? `Instagram follows in the ${ig.days}-day window`
+                    : "Unavailable"}
               </div>
             </article>
           </div>
 
-          <h3>Views by format</h3>
-          <div className="blank-grid social-formats">
-            <article className="q-card">
-              <h3>Reels</h3>
-              <div className="metric-value">{compact(ig.formats.reels)}</div>
-            </article>
-            <article className="q-card">
-              <h3>Stories</h3>
-              <div className="metric-value">{compact(ig.formats.stories)}</div>
-            </article>
-            <article className="q-card">
-              <h3>Posts</h3>
-              <div className="metric-value">{compact(ig.formats.posts)}</div>
-            </article>
-            <article className="q-card">
-              <h3>Live</h3>
-              <div className="metric-value">{compact(ig.formats.live)}</div>
-            </article>
-          </div>
-          {ig.followerViewShare != null ? (
+          {ig.formats ? (
+            <>
+              <h3>Views by format</h3>
+              <div className="blank-grid social-formats">
+                <article className="q-card">
+                  <h3>Reels</h3>
+                  <div className="metric-value">{compact(ig.formats.reels)}</div>
+                </article>
+                <article className="q-card">
+                  <h3>Stories</h3>
+                  <div className="metric-value">{compact(ig.formats.stories)}</div>
+                </article>
+                <article className="q-card">
+                  <h3>Posts</h3>
+                  <div className="metric-value">{compact(ig.formats.posts)}</div>
+                </article>
+                <article className="q-card">
+                  <h3>Live</h3>
+                  <div className="metric-value">{compact(ig.formats.live)}</div>
+                </article>
+              </div>
+              {ig.followerViewShare != null ? (
+                <p className="caption">
+                  View split in this window: {ig.followerViewShare}% followers and {ig.nonFollowerViewShare}% non-followers.
+                </p>
+              ) : (
+                <p className="caption">Reels drive most discovery. Stories are mostly from existing followers.</p>
+              )}
+            </>
+          ) : ig.organicViews != null ? (
             <p className="caption">
-              View split in this window: {ig.followerViewShare}% followers and {ig.nonFollowerViewShare}% non-followers.
+              Almost all Instagram views were organic ({compact(ig.organicViews)}). Paid ads added {compact(ig.adViews)}.
             </p>
-          ) : (
-            <p className="caption">Reels drive most discovery. Stories are mostly from existing followers.</p>
-          )}
+          ) : null}
 
           {ig.audience ? (
             <>
@@ -129,22 +211,41 @@ export default function SocialChannels({ slug }) {
             </>
           ) : null}
 
-          {ig.profileVisits ? (
+          {ig.profileVisits || ig.bioLinkTaps ? (
             <>
               <h3>Profile activity</h3>
               <div className="band">
                 <article className="mini">
                   <div className="mini-label">Profile visits</div>
-                  <div className="mini-value">{compact(ig.profileVisits)}</div>
+                  <div className="mini-value">{ig.profileVisits != null ? compact(ig.profileVisits) : "—"}</div>
                 </article>
                 <article className="mini">
-                  <div className="mini-label">Bio link taps</div>
-                  <div className="mini-value">{compact(ig.bioLinkTaps)}</div>
+                  <div className="mini-label">Link clicks</div>
+                  <div className="mini-value">{ig.bioLinkTaps != null ? compact(ig.bioLinkTaps) : "—"}</div>
                 </article>
                 <article className="mini">
-                  <div className="mini-label">Impressions / reach</div>
-                  <div className="mini-value missing">—</div>
-                  <div className="metric-hint">Unavailable in these screenshots</div>
+                  <div className="mini-label">Posts · last 60 days</div>
+                  <div className="mini-value">{ig.postsLast60 != null ? ig.postsLast60.toLocaleString("en-US") : "—"}</div>
+                  <div className="metric-hint">
+                    {ig.postsEstimated ? "Estimate" : ig.postsLast60Breakdown ? `${ig.postsLast60Breakdown.reels} Reels · ${ig.postsLast60Breakdown.stories} Stories` : "Measured"}
+                  </div>
+                </article>
+              </div>
+              <div className="band">
+                <article className="mini">
+                  <div className="mini-label">Est. impressions</div>
+                  <div className="mini-value">{ig.impressions != null ? compact(ig.impressions) : "—"}</div>
+                  <div className="metric-hint">Views used as proxy</div>
+                </article>
+                <article className="mini">
+                  <div className="mini-label">Avg impressions</div>
+                  <div className="mini-value">{ig.avgImpressions != null ? compact(ig.avgImpressions) : "—"}</div>
+                  <div className="metric-hint">Per post · estimate</div>
+                </article>
+                <article className="mini">
+                  <div className="mini-label">Avg reach / viewers</div>
+                  <div className="mini-value">{ig.avgReach != null ? compact(ig.avgReach) : ig.viewers != null ? compact(ig.viewers) : "—"}</div>
+                  <div className="metric-hint">{ig.avgReach != null ? "Viewers ÷ posts" : "Unique viewers when available"}</div>
                 </article>
               </div>
             </>
@@ -187,21 +288,25 @@ export default function SocialChannels({ slug }) {
             </article>
             <article className="metric">
               <div className="metric-label">Engagement</div>
-              <div className="metric-value">{compact(fb.engagement)}</div>
-              <div className="metric-hint">{rate(engagementRate(fb.engagement, fb.views))} of views</div>
+              <div className="metric-value">{fb.engagement != null ? compact(fb.engagement) : "—"}</div>
+              <div className="metric-hint">
+                {fb.engagement != null ? `${rate(fbRate)} of views` : "Not broken out from Meta combined"}
+              </div>
             </article>
             <article className="metric">
-              <div className="metric-label">Follows</div>
-              <div className="metric-value">{compact(fb.follows)}</div>
-              <div className="metric-hint">New follows in the window</div>
+              <div className="metric-label">Posts · last 60 days</div>
+              <div className="metric-value">{fb.postsLast60 != null ? fb.postsLast60.toLocaleString("en-US") : "—"}</div>
+              <div className="metric-hint">{fb.postsEstimated ? "Estimate" : "Measured from content export"}</div>
             </article>
             <article className="metric">
-              <div className="metric-label">Impressions</div>
-              <div className="metric-value missing">—</div>
-              <div className="metric-hint">Unavailable</div>
+              <div className="metric-label">Est. impressions</div>
+              <div className="metric-value">{fb.impressions != null ? compact(fb.impressions) : "—"}</div>
+              <div className="metric-hint">
+                {fb.avgImpressions != null ? `${compact(fb.avgImpressions)} avg · views proxy` : "Views used as proxy"}
+              </div>
             </article>
           </div>
-          <p className="caption">{fb.source}. Earnings shown in the dashboard were $0 and are not used here.</p>
+          <p className="caption">{fb.source}.</p>
         </>
       ) : null}
 

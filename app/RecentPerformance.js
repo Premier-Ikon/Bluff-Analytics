@@ -1,7 +1,7 @@
 "use client";
 
 import { recent } from "../data/recent";
-import { engagementRate, social } from "../data/social";
+import { engagementRate, social, youtubeImpressions } from "../data/social";
 
 const compact = (n) => {
   if (n >= 1_000_000) {
@@ -62,45 +62,49 @@ function platformRows(slug, posts) {
   const pack = social[slug] || {};
   const ig = pack.instagram;
   const fb = pack.facebook;
-  const igRate = ig ? engagementRate(ig.interactions, ig.views) : null;
-  const fbRate = fb ? engagementRate(fb.engagement, fb.views) : null;
+  const meta = pack.meta;
+  const yt = youtubeImpressions(posts.all.views, posts.all.videos);
+  const igRate = ig?.interactions != null ? engagementRate(ig.interactions, ig.views) : null;
+  const fbRate = fb?.engagement != null ? engagementRate(fb.engagement, fb.views) : null;
+  const metaRate = meta ? engagementRate(meta.interactions, meta.views) : null;
 
   return [
     {
       name: "YouTube",
-      posts: posts.all.videos.toLocaleString("en-US"),
-      impressions: "Unavailable",
+      posts: yt.posts.toLocaleString("en-US"),
+      postsNote: null,
+      impressions: compact(yt.avgImpressions),
+      impressionsNote: "Estimate · views ÷ posts",
       avgViews: compact(posts.all.avgViews),
       engagement: rate(posts.all.engagement),
-      note: null,
+      note: `${compact(posts.all.views)} views in the last 60 days`,
       filled: true,
     },
     {
       name: "Instagram",
-      posts: ig?.postsLast60 != null ? ig.postsLast60.toLocaleString("en-US") : "Unavailable",
-      impressions: "Unavailable",
-      avgViews: ig ? `${compact(Math.round(ig.views / ig.days))}/day` : "Unavailable",
-      engagement: igRate != null ? rate(igRate) : "Unavailable",
-      note: ig ? `${compact(ig.views)} views · ${ig.days} days · ${ig.window}` : null,
+      posts: ig?.postsLast60 != null ? ig.postsLast60.toLocaleString("en-US") : "—",
+      postsNote: ig?.postsEstimated ? "Estimate" : null,
+      impressions: ig?.avgImpressions != null ? compact(ig.avgImpressions) : "—",
+      impressionsNote: ig?.impressionsEstimated ? "Estimate · views proxy" : null,
+      avgViews: ig ? `${compact(Math.round(ig.views / ig.days))}/day` : "—",
+      engagement: igRate != null ? rate(igRate) : meta && slug === "bluff" ? rate(metaRate) : "—",
+      note: ig
+        ? `${compact(ig.views)} views · ${ig.days} days${ig.postsLast60Breakdown ? ` · ${ig.postsLast60Breakdown.reels} Reels + ${ig.postsLast60Breakdown.stories} Stories` : ""}`
+        : null,
       filled: Boolean(ig),
     },
     {
       name: "Facebook",
-      posts: "Unavailable",
-      impressions: "Unavailable",
-      avgViews: fb ? compact(fb.views) : "Unavailable",
-      engagement: fbRate != null ? rate(fbRate) : "Unavailable",
-      note: fb ? `${fb.window} · ${compact(fb.engagement)} engagement actions` : null,
+      posts: fb?.postsLast60 != null ? fb.postsLast60.toLocaleString("en-US") : "—",
+      postsNote: fb?.postsEstimated ? "Estimate" : null,
+      impressions: fb?.avgImpressions != null ? compact(fb.avgImpressions) : "—",
+      impressionsNote: fb?.impressionsEstimated ? "Estimate · views proxy" : null,
+      avgViews: fb ? compact(fb.views) : "—",
+      engagement: fbRate != null ? rate(fbRate) : meta && slug === "bluff" ? rate(metaRate) : "—",
+      note: fb
+        ? `${fb.window}${fb.viewsEstimated ? " · views estimated" : ""}`
+        : null,
       filled: Boolean(fb),
-    },
-    {
-      name: "TikTok",
-      posts: "Unavailable",
-      impressions: "Unavailable",
-      avgViews: "Unavailable",
-      engagement: "Unavailable",
-      note: null,
-      filled: false,
     },
   ];
 }
@@ -115,13 +119,22 @@ export default function RecentPerformance({ slug }) {
     bothViews;
   const posts = data.last60;
   const platforms = platformRows(slug, posts);
+  const yt = youtubeImpressions(bothViews, bothVideos);
+  const pack = social[slug] || {};
+  const reachValue = pack.meta?.reach || pack.instagram?.viewers || null;
+  const reachLabel = pack.meta?.reach
+    ? `${compact(pack.meta.reach)} Meta reach · 90 days`
+    : pack.instagram?.viewers
+      ? `${compact(pack.instagram.viewers)} Instagram viewers`
+      : "Estimate pending";
 
   return (
     <section className="card">
       <div className="card-head">
+        <p className="kicker">YouTube performance</p>
         <h2>Last two quarters</h2>
         <p className="lead">
-          Q2 is April through June 2026. Q3 is July through September 2026. Counts are YouTube videos posted in each quarter. Engagement rate is likes plus comments, divided by views. Reach and impressions are separate from views, and this export does not include them.
+          Q2 is April–June 2026. Q3 is July–September 2026. Average impressions use views as a proxy until Studio exports them.
         </p>
       </div>
       <QuarterCards
@@ -174,38 +187,35 @@ export default function RecentPerformance({ slug }) {
             <td className="num">{rate(bothEngagement)}</td>
           </tr>
           <tr>
-            <td>Average reach</td>
-            <td className="missing" colSpan={5}>Unavailable</td>
+            <td>Average impressions</td>
+            {columns.map((col, index) => (
+              <td className="num" key={`imp-${index}`}>{compact(col.avgViews)}</td>
+            ))}
+            <td className="num">{compact(yt.avgImpressions)}</td>
           </tr>
           <tr>
-            <td>Average impressions</td>
-            <td className="missing" colSpan={5}>Unavailable</td>
+            <td>Reach / viewers</td>
+            <td className="num" colSpan={5}>{reachLabel}</td>
           </tr>
         </tbody>
       </table></div>
       <p className="caption">
-        Total is both quarters and both formats. Average views and the engagement rate there are weighted by views. Average reach and average impressions stay unavailable until a Studio export provides them.
+        Average impressions on YouTube are estimated as average views until Studio impressions by quarter are available. Reach uses Meta reach for Bluff and Instagram viewers for partners when those exist.
       </p>
 
       <h3>Posts in the last 60 days</h3>
       <p className="lead">
-        August 9 through October 7, 2026 for YouTube. Instagram and Facebook windows follow the screenshots for that creator.
+        August 9 through October 7, 2026 for YouTube. Instagram and Facebook post counts are measured for Bluff and estimated for partners from each creator’s YouTube posting rate versus Bluff.
       </p>
       <div className="platform-list narrow-only">
         {platforms.map((platform) => (
           <article key={platform.name}>
             <strong>{platform.name}</strong>
-            {platform.filled ? (
-              <>
-                <span><b>{platform.posts}</b> posts</span>
-                <span><b>{platform.avgViews}</b> {platform.name === "Facebook" ? "views" : "avg views"}</span>
-                <span><b>{platform.engagement}</b> engagement</span>
-                <span>{platform.impressions === "Unavailable" ? "Impressions unavailable" : platform.impressions}</span>
-                {platform.note ? <span className="span-all">{platform.note}</span> : null}
-              </>
-            ) : (
-              <span className="span-all">Posts, views, impressions, and engagement are unavailable</span>
-            )}
+            <span><b>{platform.posts}</b> posts{platform.postsNote ? ` · ${platform.postsNote}` : ""}</span>
+            <span><b>{platform.impressions}</b> avg impressions{platform.impressionsNote ? ` · ${platform.impressionsNote}` : ""}</span>
+            <span><b>{platform.avgViews}</b> {platform.name === "Facebook" ? "views" : "avg views"}</span>
+            <span><b>{platform.engagement}</b> engagement</span>
+            {platform.note ? <span className="span-all">{platform.note}</span> : null}
           </article>
         ))}
       </div>
@@ -226,16 +236,22 @@ export default function RecentPerformance({ slug }) {
                 {platform.name}
                 {platform.note ? <div className="metric-hint">{platform.note}</div> : null}
               </td>
-              <td className={platform.posts === "Unavailable" ? "num missing" : "num"}>{platform.posts}</td>
-              <td className="num missing">{platform.impressions}</td>
-              <td className={platform.avgViews === "Unavailable" ? "num missing" : "num"}>{platform.avgViews}</td>
-              <td className={platform.engagement === "Unavailable" ? "num missing" : "num"}>{platform.engagement}</td>
+              <td className="num">
+                {platform.posts}
+                {platform.postsNote ? <div className="metric-hint">{platform.postsNote}</div> : null}
+              </td>
+              <td className="num">
+                {platform.impressions}
+                {platform.impressionsNote ? <div className="metric-hint">{platform.impressionsNote}</div> : null}
+              </td>
+              <td className="num">{platform.avgViews}</td>
+              <td className="num">{platform.engagement}</td>
             </tr>
           ))}
         </tbody>
       </table></div>
       <p className="caption">
-        Instagram post counts were not in the screenshots. Shares and saves are unavailable. YouTube’s engagement rate uses likes and comments only. Instagram uses interactions divided by views.
+        Estimated impressions use views as a 1:1 proxy. Bluff Instagram posts are 92 Reels + 192 Stories. Partner social post counts scale Bluff’s measured counts by YouTube volume.
       </p>
     </section>
   );

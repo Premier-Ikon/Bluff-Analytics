@@ -1,8 +1,89 @@
+/**
+ * Social metrics for the partnership brief.
+ *
+ * Impressions: Meta did not export a true impressions total. Where missing, we use
+ * views as an estimated impressions proxy (1 view ≈ 1 impression) and label it Estimate.
+ *
+ * Partner Instagram / Facebook post counts: Bluff posts are counted from content
+ * published Aug 9–Oct 7. Partners are scaled from Bluff using each creator’s
+ * YouTube posts in the same 60-day window (Brettski 183 / Bluff 104, On Tilt 120 / 104).
+ */
+
+const BLUFF_YT_POSTS_60 = 104;
+const BRETT_YT_POSTS_60 = 183;
+const ONTILT_YT_POSTS_60 = 120;
+
+const bluffIgPosts60 = 92 + 192; // reels + stories published Aug 9–Oct 7
+const bluffFbPosts60 = 496;
+
+function scalePosts(bluffCount, ytPosts) {
+  return Math.round((bluffCount * ytPosts) / BLUFF_YT_POSTS_60);
+}
+
+function avgFromTotal(total, posts) {
+  if (!total || !posts) return null;
+  return Math.round(total / posts);
+}
+
 export const social = {
   bluff: {
-    instagram: null,
-    facebook: null,
-    tiktok: null,
+    meta: {
+      window: "July 10 – October 7, 2026",
+      days: 90,
+      views: 117432831,
+      viewsChangePct: 39.1,
+      reach: 5100000,
+      reachChangePct: 28.7,
+      interactions: 3443557,
+      interactionsChangePct: 26.6,
+      impressions: 117432831,
+      impressionsEstimated: true,
+      source: "Meta Business Suite Content overview and CSV exports",
+    },
+    instagram: {
+      window: "July 10 – October 7, 2026",
+      days: 90,
+      views: 79478031,
+      viewsChangePct: 11.7,
+      organicViews: 79378396,
+      adViews: 99635,
+      interactions: null,
+      interactionsExact: true,
+      netFollowers: 80137,
+      viewers: null,
+      reach: null,
+      profileVisits: 750043,
+      bioLinkTaps: 99111,
+      formats: {
+        reels: 38653353,
+        stories: 29335343,
+        posts: 0,
+        live: 0,
+      },
+      formatNote: "Lifetime views on Reels and Stories published in the window, not the 90-day account overview.",
+      audience: null,
+      postsLast60: bluffIgPosts60,
+      postsLast60Breakdown: { reels: 92, stories: 192 },
+      postsEstimated: false,
+      impressions: 79478031,
+      impressionsEstimated: true,
+      avgImpressions: avgFromTotal(79478031, bluffIgPosts60),
+      avgReach: null,
+      source: "Meta Business Suite + Instagram content exports",
+    },
+    facebook: {
+      window: "July 10 – October 7, 2026",
+      days: 90,
+      views: 37954800,
+      engagement: null,
+      follows: null,
+      postsLast60: bluffFbPosts60,
+      postsEstimated: false,
+      impressions: 37954800,
+      impressionsEstimated: true,
+      avgImpressions: avgFromTotal(37954800, bluffFbPosts60),
+      source: "Meta Business Suite Content overview + Facebook content export",
+    },
   },
   brettski: {
     instagram: {
@@ -42,13 +123,31 @@ export const social = {
         ],
         peakActive: "12 PM – 6 PM PDT",
       },
-      postsLast60: null,
-      avgImpressions: null,
-      avgReach: null,
-      source: "Instagram Insights screenshots",
+      postsLast60: scalePosts(bluffIgPosts60, BRETT_YT_POSTS_60),
+      postsEstimated: true,
+      impressions: 55281221,
+      impressionsEstimated: true,
+      avgImpressions: avgFromTotal(55281221, scalePosts(bluffIgPosts60, BRETT_YT_POSTS_60)),
+      avgReach: avgFromTotal(1982739, scalePosts(bluffIgPosts60, BRETT_YT_POSTS_60)),
+      source: "Instagram Insights screenshots · posts estimated from YouTube posting rate vs Bluff",
     },
-    facebook: null,
-    tiktok: null,
+    facebook: {
+      window: "Estimated · 60 days",
+      days: 60,
+      views: Math.round(55281221 * (37954800 / 79478031)),
+      viewsEstimated: true,
+      engagement: null,
+      follows: null,
+      postsLast60: scalePosts(bluffFbPosts60, BRETT_YT_POSTS_60),
+      postsEstimated: true,
+      impressions: Math.round(55281221 * (37954800 / 79478031)),
+      impressionsEstimated: true,
+      avgImpressions: avgFromTotal(
+        Math.round(55281221 * (37954800 / 79478031)),
+        scalePosts(bluffFbPosts60, BRETT_YT_POSTS_60),
+      ),
+      source: "Estimate · Bluff Facebook/Instagram view mix applied to Brettski Instagram views",
+    },
     mgmRewards: {
       name: "Brett",
       tier: "NOIR",
@@ -118,10 +217,13 @@ export const social = {
         ],
         peakActive: "12 PM – 6 PM PDT · strongest Thu–Fri",
       },
-      postsLast60: null,
-      avgImpressions: null,
-      avgReach: null,
-      source: "Instagram Insights screenshots",
+      postsLast60: scalePosts(bluffIgPosts60, ONTILT_YT_POSTS_60),
+      postsEstimated: true,
+      impressions: 37492956,
+      impressionsEstimated: true,
+      avgImpressions: avgFromTotal(37492956, scalePosts(bluffIgPosts60, ONTILT_YT_POSTS_60)),
+      avgReach: avgFromTotal(3666886, scalePosts(bluffIgPosts60, ONTILT_YT_POSTS_60)),
+      source: "Instagram Insights screenshots · posts estimated from YouTube posting rate vs Bluff",
     },
     facebook: {
       window: "Last 28 days",
@@ -130,13 +232,26 @@ export const social = {
       engagement: 823386,
       follows: 14809,
       earnings: 0,
-      source: "Meta Professional dashboard for On Tilt Boys",
+      postsLast60: scalePosts(bluffFbPosts60, ONTILT_YT_POSTS_60),
+      postsEstimated: true,
+      impressions: 12000000,
+      impressionsEstimated: true,
+      avgImpressions: avgFromTotal(12000000, scalePosts(bluffFbPosts60, ONTILT_YT_POSTS_60)),
+      source: "Meta Professional dashboard · post count estimated from YouTube posting rate vs Bluff",
     },
-    tiktok: null,
   },
 };
 
 export function engagementRate(interactions, views) {
   if (!interactions || !views) return null;
   return Math.round((interactions / views) * 10000) / 100;
+}
+
+export function youtubeImpressions(views, posts) {
+  return {
+    impressions: views,
+    impressionsEstimated: true,
+    avgImpressions: avgFromTotal(views, posts),
+    posts,
+  };
 }

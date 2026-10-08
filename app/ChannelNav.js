@@ -13,7 +13,7 @@ const links = [
 export default function ChannelNav() {
   const pathname = usePathname();
   return (
-    <nav className="switcher">
+    <nav className="switcher" aria-label="Report sections">
       {links.map((link) => (
         <Link key={link.href} href={link.href} className={pathname === link.href ? "on" : ""}>
           {link.label}

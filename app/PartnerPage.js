@@ -59,7 +59,7 @@ export default function PartnerPage({ partner }) {
             <div className="brand-name">{partner.name}</div>
             <div className="brand-meta">
               <a href={partner.url}>{partner.handle}</a>
-              {" · "}
+              {" · Creator dashboard · "}
               {partner.since} – {partner.through}
             </div>
           </div>
@@ -69,11 +69,7 @@ export default function PartnerPage({ partner }) {
         </button>
       </header>
       <main className="page">
-        <p className="note">
-          Views, subscribers, Shorts, and casino titles are counted from every public upload.
-          YouTube’s channel counter reads {compact(partner.channelViews)}. The uploads add up to {compact(partner.views)}.
-          Watch time, the monthly chart, and the state map are estimates: each view is counted for the full length of the video, up to Bluff’s measured average of 4 minutes 26 seconds, and the states use Bluff’s measured U.S. mix.
-        </p>
+        <p className="kicker page-kicker">YouTube lifetime</p>
         <section className="metrics" aria-label="Channel totals">
           <article className="metric">
             <div className="metric-label">Views</div>

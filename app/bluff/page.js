@@ -3,6 +3,7 @@
 // import AudienceMap from "../AudienceMap";
 import FormatSplit, { splitWatchHours } from "../FormatSplit";
 import RecentPerformance from "../RecentPerformance";
+import SocialChannels from "../SocialChannels";
 import WatchChart, { yearRows } from "../WatchChart";
 import { formatMonths } from "../../data/formats";
 import { report } from "../../data/report";
@@ -77,8 +78,7 @@ export default function Page() {
             <div className="brand-name">Bluff</div>
             <div className="brand-meta">
               <a href={channel.url}>{channel.handle}</a>
-              {" · "}
-              January 2009 – October 7, 2026
+              {" · Creator dashboard · Jan 2009 – Oct 7, 2026"}
             </div>
           </div>
         </div>
@@ -88,10 +88,7 @@ export default function Page() {
       </header>
 
       <main className="page">
-        <p className="note">
-          Watch time, the state map, and the country mix are from YouTube Studio. The Shorts and long-form hours split that total by video length and views. Views and the casino list are from public video data.
-        </p>
-
+        <p className="kicker page-kicker">YouTube Studio · lifetime</p>
         <section className="metrics" aria-label="Channel totals">
           <article className="metric">
             <div className="metric-label">Views</div>
@@ -116,6 +113,8 @@ export default function Page() {
         </section>
 
         <RecentPerformance slug="bluff" />
+
+        <SocialChannels slug="bluff" />
 
         <FormatSplit format={formatMonths.bluff} />
 
