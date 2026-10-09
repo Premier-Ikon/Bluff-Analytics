@@ -104,20 +104,28 @@ function measuredPosts(pack) {
 const plan = [
   ["Team Arrival", "Arrive the evening before or early morning of activation day. Check in at the property."],
   ["Team Dinner (Optional)", "Dinner at an on-property restaurant on the day of arrival or the evening following the activation, when available."],
-  ["10:00 AM · Private Meet & Greet", "Exclusive fan experience for up to 20 guests, if applicable."],
-  ["11:00 AM · Team Lunch", "Team breaks for lunch ahead of the main activation."],
+  [
+    "10:00 AM · Private Meet & Greet and Event Walkthrough",
+    "Exclusive fan experience for up to 20 guests, if applicable. Followed by walkthrough, credentials, and a filming path signed off with security.",
+  ],
+  [
+    "11:00 AM · Team Lunch",
+    "Team breaks for lunch ahead of the main activation — typically off property, but not required.",
+  ],
   ["12:45 PM · Grand Entrance", "Full creator team makes a coordinated entrance onto the casino floor."],
   [
     "1:00–3:00 PM · Main Fan Activation",
-    "Play craps with fans at a designated table for about 1–2 hours, distribute promotional free-play chips, interact with fans, and film content.",
+    "Play craps with fans at a designated table for approximately 1–2 hours, distribute promotional free-play chips, interact with fans, and film content.",
   ],
   ["Fan Session Wrap-Up", "Conclude the scheduled fan gaming session and final interactions."],
-  ["Private Team Break · ~1 Hour", "Team moves to a secure location to allow fans to disperse."],
+  ["Private Team Break · Approx. 1 Hour", "Team moves to a secure location to allow fans to disperse."],
   [
     "Additional Casino Play & Filming",
-    "Team returns to the floor for high-limit slots and/or table games, capturing more long-form and short-form content.",
+    "Team returns to the casino floor for high-limit slots and/or table games, capturing additional long-form and short-form content.",
   ],
   ["Wrap-Up & Departure", "Complete filming and depart for the next tour destination."],
+  ["Social Posts", "Posts during and after the visit, counted by platform."],
+  ["Follow-up", "Views at 7, 30, 60, and 90 days. Report each property, then the full tour."],
 ];
 
 function CreatorLogo({ slug, name, className = "" }) {
@@ -314,7 +322,7 @@ export default function Page() {
           <div className="card-head">
             <h2>A typical casino activation itinerary</h2>
             <p className="lead">
-              Based on previous successful activations — bringing creators and fans together for an on-property experience while capturing engaging casino content.
+              A sample itinerary based on previous successful activations, designed to bring creators and fans together for an exciting on-property experience while capturing engaging casino content.
             </p>
           </div>
           <ol className="plan">
