@@ -307,7 +307,7 @@ export default function Page() {
           </div>
         </section>
 
-        <p className="section-label"><span>03</span> Sample property visit</p>
+        <p className="section-label"><span>03</span> Sample property itinerary</p>
         <section className="card">
           <div className="card-head">
             <h2>How a property activation runs</h2>
