@@ -1,7 +1,7 @@
 "use client";
 
 import PlatformIcon from "./PlatformIcon";
-import { engagementRate, scaleToDays, social } from "../data/social";
+import { engagementRate, measuredMetaViews, social } from "../data/social";
 
 const compact = (n) => {
   if (n == null) return "—";
@@ -52,28 +52,49 @@ function emptyAudience() {
   };
 }
 
+function windowLead(pack, fallback) {
+  if (pack?.window) return pack.window;
+  return fallback;
+}
+
+function daysHint(pack) {
+  if (!pack?.days) return "Unavailable";
+  return `${pack.days} days`;
+}
+
 export default function SocialChannels({ slug }) {
   const pack = social[slug] || {};
   const ig = pack.instagram || null;
   const fb = pack.facebook || null;
   const meta = pack.meta || null;
+  const isBluff = slug === "bluff";
 
-  const igViews90 = scaleToDays(ig, 90);
-  const fbViews90 = scaleToDays(fb, 90);
-  const igActions90 = scaleToDays(ig, 90, "interactions");
-  const fbActions90 = scaleToDays(fb, 90, "engagement");
-  const igRate = ig?.interactions != null ? engagementRate(ig.interactions, ig.views) : null;
-  const fbRate = fb?.engagement != null ? engagementRate(fb.engagement, fb.views) : null;
+  const igViews = measuredMetaViews(ig);
+  const fbViews = measuredMetaViews(fb);
+
+  const igActions =
+    ig?.interactions != null && (isBluff || !ig.interactionsEstimated) ? ig.interactions : null;
+  const fbActions =
+    fb?.engagement != null && (isBluff || !fb.engagementEstimated) ? fb.engagement : null;
+
+  const igRate = igActions != null && ig?.views != null ? engagementRate(igActions, ig.views) : null;
+  const fbRate = fbActions != null && fb?.views != null ? engagementRate(fbActions, fb.views) : null;
+
+  // Audience: Bluff Meta export, or partner IG audience from screenshots
   const audience = meta?.audience || ig?.audience || emptyAudience();
+  const hasAudience =
+    audience.men != null ||
+    (audience.countries || []).some((row) => row.share != null) ||
+    (audience.ages || []).some((row) => row.share != null);
   const topCountries = (audience.countries || []).slice(0, 5);
   const topCities = (audience.cities || []).slice(0, 5);
 
   const reachValue = ig?.reach ?? ig?.viewers ?? null;
   const reachHint = ig?.reach != null
-    ? "Meta reach · 90-day window"
+    ? "Meta reach · measured window"
     : ig?.viewers != null
-      ? "Unique viewers · not labeled reach"
-      : "Unavailable";
+      ? "Unique viewers · Insights"
+      : "—";
 
   const followersValue = ig?.followers != null
     ? compact(ig.followers)
@@ -83,11 +104,11 @@ export default function SocialChannels({ slug }) {
   const followersHint = ig?.followers != null
     ? `+${compact(ig.netFollowers)} in window · +${ig.followerGrowthPct}%`
     : ig?.netFollowers != null
-      ? "Net follows · 90-day window"
-      : "Unavailable";
+      ? `Net follows · ${daysHint(ig)}`
+      : "—";
 
-  const igScaled = ig && (ig.days || 90) !== 90;
-  const fbScaled = fb && (fb.days || 90) !== 90;
+  const fbPosts =
+    fb && !fb.postsEstimated && fb.postsLast60 != null ? fb.postsLast60 : null;
 
   return (
     <>
@@ -98,25 +119,25 @@ export default function SocialChannels({ slug }) {
             Instagram
           </p>
           <h2>Instagram performance</h2>
-          <p className="lead">July 9th 2026 – October 7th 2026</p>
+          <p className="lead">{windowLead(ig, "Measured Instagram window")}</p>
         </div>
         <div className="metrics package">
           <Metric
             label="Views"
-            value={igViews90 != null ? compact(igViews90) : "—"}
-            hint={ig ? `90 days${igScaled ? " · scaled" : ""}` : "Unavailable"}
+            value={igViews != null ? compact(igViews) : "—"}
+            hint={igViews != null ? daysHint(ig) : "—"}
           />
           <Metric
             label="Interactions"
             value={
-              igActions90 != null
-                ? `${compact(igActions90)}${ig.interactionsExact === false ? "+" : ""}`
+              igActions != null
+                ? `${compact(igActions)}${ig.interactionsExact === false ? "+" : ""}`
                 : "—"
             }
             hint={
-              igActions90 != null
-                ? `${rate(igRate)} of views${ig.interactionsEstimated || igScaled ? " · estimate" : ""}`
-                : "Unavailable"
+              igActions != null
+                ? `${rate(igRate)} of views${ig.interactionsEstimated ? " · estimate" : ""}`
+                : "—"
             }
           />
           <Metric label="Reach / viewers" value={compact(reachValue)} hint={reachHint} />
@@ -131,42 +152,31 @@ export default function SocialChannels({ slug }) {
             Facebook
           </p>
           <h2>Facebook performance</h2>
-          <p className="lead">July 9th 2026 – October 7th 2026</p>
+          <p className="lead">
+            {fbViews != null || fbActions != null || fbPosts != null
+              ? windowLead(fb, "Measured Facebook window")
+              : "No measured Facebook export yet"}
+          </p>
         </div>
         <div className="metrics package">
           <Metric
             label="Views"
-            value={fbViews90 != null ? compact(fbViews90) : "—"}
-            hint={
-              fb
-                ? `90 days${fb.viewsEstimated || fbScaled ? " · estimate" : ""}`
-                : "Unavailable"
-            }
+            value={fbViews != null ? compact(fbViews) : "—"}
+            hint={fbViews != null ? daysHint(fb) : "—"}
           />
           <Metric
             label="Engagement"
-            value={fbActions90 != null ? compact(fbActions90) : "—"}
+            value={fbActions != null ? compact(fbActions) : "—"}
             hint={
-              fbActions90 != null
-                ? `${rate(fbRate)} of views${fb.engagementEstimated || fbScaled ? " · estimate" : ""}`
-                : "Unavailable"
+              fbActions != null
+                ? `${rate(fbRate)} of views${fb.engagementEstimated ? " · estimate" : ""}`
+                : "—"
             }
           />
           <Metric
-            label="Posts · past 90 days"
-            value={fb?.postsLast60 != null ? fb.postsLast60.toLocaleString("en-US") : "—"}
-            hint={fb?.postsEstimated ? "Estimate" : fb?.postsLast60 != null ? "Measured" : "Unavailable"}
-          />
-          <Metric
-            label="Est. impressions"
-            value={fbViews90 != null ? compact(fbViews90) : "—"}
-            hint={
-              fb?.avgImpressions != null
-                ? `${compact(fb.avgImpressions)} avg · views proxy`
-                : fb
-                  ? "Views used as proxy"
-                  : "Unavailable"
-            }
+            label="Posts · measured window"
+            value={fbPosts != null ? fbPosts.toLocaleString("en-US") : "—"}
+            hint={fbPosts != null ? "Measured" : "—"}
           />
         </div>
       </section>
@@ -176,8 +186,9 @@ export default function SocialChannels({ slug }) {
           <p className="kicker">Meta social</p>
           <h2>Meta audience breakout</h2>
           <p className="lead">
-            July 9th 2026 – October 7th 2026 · combined Instagram and Facebook
-            {audience.estimated ? " · estimate" : ""}
+            {hasAudience
+              ? `${windowLead(meta || ig, "Audience from Insights")} · Instagram${meta ? " + Facebook" : ""}`
+              : "No measured audience breakout yet"}
           </p>
         </div>
         <div className={`audience-grid${topCities.length ? " audience-grid-cities" : ""}`}>

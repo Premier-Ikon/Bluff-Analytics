@@ -4,7 +4,7 @@ import Link from "next/link";
 import AudienceMap from "./AudienceMap";
 import PlatformIcon from "./PlatformIcon";
 import { recent } from "../data/recent";
-import { scaleToDays, social } from "../data/social";
+import { measuredMetaViewsForDays, social } from "../data/social";
 import { usStates } from "../data/states";
 
 const ROSTER_GEO_SCALE = 3;
@@ -76,29 +76,30 @@ function last90Stats(slug) {
 }
 
 const teamYtViews = creators.reduce((sum, creator) => sum + last90Stats(creator.slug).views, 0);
-const instagramViews = creators.reduce(
-  (sum, creator) => sum + (scaleToDays(social[creator.slug]?.instagram, 90) || 0),
-  0,
-);
-const facebookViews = creators.reduce(
-  (sum, creator) => sum + (scaleToDays(social[creator.slug]?.facebook, 90) || 0),
-  0,
-);
+
+/** Meta team rollups: measured only. FB = Bluff 90d; IG = Bluff + Brettski 90d (On Tilt is 60d). */
+const instagramViews =
+  (measuredMetaViewsForDays(social.bluff?.instagram, 90) || 0) +
+  (measuredMetaViewsForDays(social.brettski?.instagram, 90) || 0);
+const facebookViews = measuredMetaViewsForDays(social.bluff?.facebook, 90) || 0;
 const totalSubs = creators.reduce((sum, creator) => sum + creator.subscribers, 0);
 
-/** 30-day potential: YouTube from last-90 ÷ 3; IG/FB scaled from each window to 30 days. */
-const potential30 = creators.reduce(
-  (sum, creator) => {
-    const slug = creator.slug;
-    const yt30 = Math.round((recent[slug]?.last90?.all?.views || 0) / 3);
-    const ig = social[slug]?.instagram;
-    const fb = social[slug]?.facebook;
-    const ig30 = ig ? Math.round(ig.views * (30 / (ig.days || 90))) : 0;
-    const fb30 = fb ? Math.round(fb.views * (30 / (fb.days || 90))) : 0;
-    return sum + yt30 + ig30 + fb30;
-  },
-  0,
-);
+/** 30-day potential: YT all three ÷ 3; Meta only from measured packs (no estimates). */
+const potential30 = creators.reduce((sum, creator) => {
+  const yt30 = Math.round((recent[creator.slug]?.last90?.all?.views || 0) / 3);
+  return sum + yt30;
+}, 0)
+  + Math.round(instagramViews / 3)
+  + Math.round(facebookViews / 3);
+
+function measuredPosts(pack) {
+  if (!pack || pack.postsEstimated || pack.postsLast60 == null) return null;
+  return pack.postsLast60;
+}
+
+function cellViews90(pack) {
+  return measuredMetaViewsForDays(pack, 90);
+}
 
 const plan = [
   ["Arrival", "Walkthrough, credentials, and a filming path signed off with security."],
@@ -160,16 +161,18 @@ export default function Page() {
             <article>
               <div className="metric-label metric-label-with-icon">
                 <PlatformIcon name="Facebook" />
-                Facebook views · team
+                Facebook views · Bluff
               </div>
               <div className="metric-value">{compact(facebookViews)}</div>
+              <div className="metric-hint">Measured 90d · partners pending export</div>
             </article>
             <article>
               <div className="metric-label metric-label-with-icon">
                 <PlatformIcon name="Instagram" />
-                Instagram views · team
+                Instagram views · measured
               </div>
               <div className="metric-value">{compact(instagramViews)}</div>
+              <div className="metric-hint">Bluff + Brettski · 90d</div>
             </article>
             <article>
               <div className="metric-label">Combined subscribers</div>
@@ -184,7 +187,7 @@ export default function Page() {
             <h2>Team reach in market</h2>
             <p className="big-num">{compact(potential30)} views</p>
             <p>
-              Projected monthly run-rate across YouTube, Instagram, and Facebook — Bluff, Brettski, and On Tilt Boys as one team.
+              YouTube team run-rate plus measured Meta only (Bluff Facebook · Bluff + Brettski Instagram). Gaps left out until partner exports land.
             </p>
           </article>
           <article>
@@ -192,7 +195,7 @@ export default function Page() {
             <h2>Value of working with the team</h2>
             <p className="big-num">{compact(totalSubs)} fans</p>
             <p>
-              {compact(potential30)} potential views in 30 days across YouTube, Instagram, and Facebook — from one buy with Bluff, Brettski, and On Tilt Boys. Property-shot content that keeps working after the visit.
+              {compact(potential30)} potential views in 30 days from measured channels — YouTube across the team, Meta where we have exports. Property-shot content that keeps working after the visit.
             </p>
           </article>
           <article>
@@ -223,7 +226,9 @@ export default function Page() {
         <section className="card">
           <div className="card-head">
             <h2>Value by creator</h2>
-            <p className="lead">Jul 9 – Oct 7 — lifetime views on videos each creator published in this window.</p>
+            <p className="lead">
+              Jul 9 – Oct 7 YouTube for all three. Meta cells are measured 90-day figures only — estimates show as —.
+            </p>
           </div>
 
           <div className="compare-block">
@@ -263,28 +268,17 @@ export default function Page() {
                   <tr>
                     <td>Instagram views</td>
                     {creators.map((creator) => {
-                      const ig90 = scaleToDays(social[creator.slug]?.instagram, 90);
-                      return <td className="num" key={creator.slug}>{ig90 != null ? compact(ig90) : "—"}</td>;
+                      const views = cellViews90(social[creator.slug]?.instagram);
+                      return <td className="num" key={creator.slug}>{views != null ? compact(views) : "—"}</td>;
                     })}
                   </tr>
                   <tr>
                     <td>IG posts</td>
                     {creators.map((creator) => {
-                      const ig = social[creator.slug]?.instagram;
+                      const posts = measuredPosts(social[creator.slug]?.instagram);
                       return (
                         <td className="num" key={creator.slug}>
-                          {ig?.postsLast60?.toLocaleString("en-US") || "—"}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                  <tr>
-                    <td>IG avg impressions</td>
-                    {creators.map((creator) => {
-                      const ig = social[creator.slug]?.instagram;
-                      return (
-                        <td className="num" key={creator.slug}>
-                          {ig?.avgImpressions != null ? compact(ig.avgImpressions) : "—"}
+                          {posts != null ? posts.toLocaleString("en-US") : "—"}
                         </td>
                       );
                     })}
@@ -292,17 +286,17 @@ export default function Page() {
                   <tr>
                     <td>Facebook views</td>
                     {creators.map((creator) => {
-                      const fb90 = scaleToDays(social[creator.slug]?.facebook, 90);
-                      return <td className="num" key={creator.slug}>{fb90 != null ? compact(fb90) : "—"}</td>;
+                      const views = cellViews90(social[creator.slug]?.facebook);
+                      return <td className="num" key={creator.slug}>{views != null ? compact(views) : "—"}</td>;
                     })}
                   </tr>
                   <tr>
                     <td>FB posts</td>
                     {creators.map((creator) => {
-                      const fb = social[creator.slug]?.facebook;
+                      const posts = measuredPosts(social[creator.slug]?.facebook);
                       return (
                         <td className="num" key={creator.slug}>
-                          {fb?.postsLast60?.toLocaleString("en-US") || "—"}
+                          {posts != null ? posts.toLocaleString("en-US") : "—"}
                         </td>
                       );
                     })}

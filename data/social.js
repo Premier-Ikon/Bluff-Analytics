@@ -1,31 +1,18 @@
 /**
  * Social metrics for the partnership brief.
  *
- * Impressions: Meta did not export a true impressions total. Where missing, we use
- * views as an estimated impressions proxy (1 view ≈ 1 impression) and label it Estimate.
+ * Bluff: full Meta exports — keep as-is (measured / client-ready).
+ * Brettski: Instagram Insights screenshots only. Facebook and Meta post counts
+ *   were estimates → omitted (null) so the UI shows "—".
+ * On Tilt: Instagram Insights (60d) + Facebook Professional dashboard (28d).
+ *   Post counts and any scaled-to-90d guesses → omitted.
  *
- * Partner Instagram / Facebook post counts: Bluff posts are counted from Meta
- * content exports Jul 10–Oct 7 (90 days). Partners are scaled from Bluff using
- * each surface’s view share vs Bluff (same views-per-post shape), not YouTube
- * posting rate — YT volume was overstating Meta posts.
- *
- * Gaps filled with estimates (interactionsExact / *Estimated flags):
- * - Bluff IG/FB interactions: Meta total split by each surface’s share of Meta views.
- * - Brettski Facebook views: Bluff FB/IG view mix × Brettski Instagram views.
- * - Brettski Facebook engagement: 2.8% of Facebook views (team rate used in prior brief).
- * - Facebook follows: scaled from On Tilt’s measured follows-per-view.
- *
- * Bluff Meta audience: measured from Meta Audience.csv export (age/gender, countries, cities).
+ * Team summaries should only roll up measured Meta values (see measuredMetaViews).
  */
 
 // Meta content exports Jul 10–Oct 7 (IG reels/carousels + stories; Facebook posts)
 const bluffIgPosts90 = 152 + 284;
 const bluffFbPosts90 = 740;
-
-const ONTILT_IG_VIEWS_60 = 37492956;
-const ONTILT_FB_VIEWS_28 = 12000000;
-const ONTILT_IG_VIEWS_90 = Math.round(ONTILT_IG_VIEWS_60 * (90 / 60));
-const ONTILT_FB_VIEWS_90 = Math.round(ONTILT_FB_VIEWS_28 * (90 / 28));
 
 const BLUFF_META_VIEWS = 117432831;
 const BLUFF_META_INTERACTIONS = 3443557;
@@ -40,15 +27,11 @@ const bluffFbEngagement = Math.round(
   BLUFF_META_INTERACTIONS * (BLUFF_FB_VIEWS / BLUFF_META_VIEWS),
 );
 
-const BRETT_IG_VIEWS = 55281221;
-const BRETT_FB_VIEWS = Math.round(BRETT_IG_VIEWS * (BLUFF_FB_VIEWS / BLUFF_IG_VIEWS));
-const BRETT_FB_ENGAGEMENT_RATE = 2.8; // percent of views
-const BRETT_FB_ENGAGEMENT = Math.round((BRETT_FB_VIEWS * BRETT_FB_ENGAGEMENT_RATE) / 100);
-
 // On Tilt Facebook: 14,809 follows on 12M views (28-day Professional dashboard)
 const ONTILT_FB_FOLLOWS_PER_VIEW = 14809 / 12000000;
 const bluffFbFollows = Math.round(BLUFF_FB_VIEWS * ONTILT_FB_FOLLOWS_PER_VIEW);
-const brettFbFollows = Math.round(BRETT_FB_VIEWS * ONTILT_FB_FOLLOWS_PER_VIEW);
+
+const BRETT_IG_VIEWS = 55281221;
 
 /** Bluff Meta audience — Audience.csv from Meta Business Suite. */
 const bluffAudience = {
@@ -98,17 +81,6 @@ const bluffAudience = {
   source: "Meta Business Suite Audience.csv",
 };
 
-/** Estimate partner Meta posts from Bluff’s measured posts × view ratio. */
-function scalePostsByViews(bluffPosts, creatorViews, bluffViews) {
-  if (!bluffViews || !creatorViews) return null;
-  return Math.round((bluffPosts * creatorViews) / bluffViews);
-}
-
-const brettIgPosts90 = scalePostsByViews(bluffIgPosts90, BRETT_IG_VIEWS, BLUFF_IG_VIEWS);
-const brettFbPosts90 = scalePostsByViews(bluffFbPosts90, BRETT_FB_VIEWS, BLUFF_FB_VIEWS);
-const ontiltIgPosts90 = scalePostsByViews(bluffIgPosts90, ONTILT_IG_VIEWS_90, BLUFF_IG_VIEWS);
-const ontiltFbPosts90 = scalePostsByViews(bluffFbPosts90, ONTILT_FB_VIEWS_90, BLUFF_FB_VIEWS);
-
 function avgFromTotal(total, posts) {
   if (!total || !posts) return null;
   return Math.round(total / posts);
@@ -134,6 +106,7 @@ export const social = {
       window: "July 10 – October 7, 2026",
       days: 90,
       views: BLUFF_IG_VIEWS,
+      viewsEstimated: false,
       viewsChangePct: 11.7,
       organicViews: 79378396,
       adViews: 99635,
@@ -167,6 +140,7 @@ export const social = {
       window: "July 10 – October 7, 2026",
       days: 90,
       views: BLUFF_FB_VIEWS,
+      viewsEstimated: false,
       engagement: bluffFbEngagement,
       engagementEstimated: true,
       follows: bluffFbFollows,
@@ -185,8 +159,10 @@ export const social = {
       window: "July 9 – October 6, 2026",
       days: 90,
       views: BRETT_IG_VIEWS,
+      viewsEstimated: false,
       interactions: 1709000,
       interactionsExact: false,
+      interactionsEstimated: false,
       netFollowers: 7392,
       viewers: 1982739,
       followerViewShare: 49.4,
@@ -218,30 +194,31 @@ export const social = {
         ],
         peakActive: "12 PM – 6 PM PDT",
       },
-      postsLast60: brettIgPosts90,
+      // Post counts were scaled from Bluff — omit until we have Brett’s export
+      postsLast60: null,
       postsEstimated: true,
-      impressions: BRETT_IG_VIEWS,
+      impressions: null,
       impressionsEstimated: true,
-      avgImpressions: avgFromTotal(BRETT_IG_VIEWS, brettIgPosts90),
-      avgReach: avgFromTotal(1982739, brettIgPosts90),
-      source: "Instagram Insights screenshots · posts estimated from Bluff Meta views-per-post",
+      avgImpressions: null,
+      avgReach: null,
+      source: "Instagram Insights screenshots · post counts omitted (no export)",
     },
+    // No measured Facebook export — omit so UI shows "—"
     facebook: {
-      window: "July 9 – October 6, 2026",
-      days: 90,
-      views: BRETT_FB_VIEWS,
+      window: null,
+      days: null,
+      views: null,
       viewsEstimated: true,
-      engagement: BRETT_FB_ENGAGEMENT,
+      engagement: null,
       engagementEstimated: true,
-      follows: brettFbFollows,
+      follows: null,
       followsEstimated: true,
-      postsLast60: brettFbPosts90,
+      postsLast60: null,
       postsEstimated: true,
-      impressions: BRETT_FB_VIEWS,
+      impressions: null,
       impressionsEstimated: true,
-      avgImpressions: avgFromTotal(BRETT_FB_VIEWS, brettFbPosts90),
-      source:
-        "Estimate · Bluff FB/IG view mix × Brettski IG views · posts from Bluff Meta views-per-post · 2.8% eng. · follows from On Tilt rate",
+      avgImpressions: null,
+      source: "No Facebook export — omitted",
     },
     mgmRewards: {
       name: "Brett",
@@ -259,8 +236,10 @@ export const social = {
       window: "August 7 – October 6, 2026",
       days: 60,
       views: 37492956,
+      viewsEstimated: false,
       interactions: 1293000,
       interactionsExact: false,
+      interactionsEstimated: false,
       netFollowers: 21133,
       followers: 135870,
       followerGrowthPct: 18.4,
@@ -312,27 +291,30 @@ export const social = {
         ],
         peakActive: "12 PM – 6 PM PDT · strongest Thu–Fri",
       },
-      postsLast60: ontiltIgPosts90,
+      postsLast60: null,
       postsEstimated: true,
-      impressions: ONTILT_IG_VIEWS_60,
+      impressions: null,
       impressionsEstimated: true,
-      avgImpressions: avgFromTotal(ONTILT_IG_VIEWS_90, ontiltIgPosts90),
-      avgReach: avgFromTotal(3666886, ontiltIgPosts90),
-      source: "Instagram Insights screenshots · posts estimated from Bluff Meta views-per-post (90d)",
+      avgImpressions: null,
+      avgReach: null,
+      source: "Instagram Insights screenshots · post counts omitted (no export)",
     },
     facebook: {
       window: "Last 28 days",
       days: 28,
-      views: ONTILT_FB_VIEWS_28,
+      views: 12000000,
+      viewsEstimated: false,
       engagement: 823386,
+      engagementEstimated: false,
       follows: 14809,
+      followsEstimated: false,
       earnings: 0,
-      postsLast60: ontiltFbPosts90,
+      postsLast60: null,
       postsEstimated: true,
-      impressions: ONTILT_FB_VIEWS_28,
+      impressions: null,
       impressionsEstimated: true,
-      avgImpressions: avgFromTotal(ONTILT_FB_VIEWS_90, ontiltFbPosts90),
-      source: "Meta Professional dashboard · posts estimated from Bluff Meta views-per-post (90d)",
+      avgImpressions: null,
+      source: "Meta Professional dashboard · post counts omitted (no export)",
     },
   },
 };
@@ -342,11 +324,33 @@ export function engagementRate(interactions, views) {
   return Math.round((interactions / views) * 10000) / 100;
 }
 
-/** Scale a Meta pack’s views (or another absolute metric) to a target window. */
+/**
+ * Measured Meta views only (no estimates, no window scaling).
+ * Used for client-facing rollups so guessed numbers never enter team totals.
+ */
+export function measuredMetaViews(pack) {
+  if (!pack || pack.views == null || pack.viewsEstimated) return null;
+  return pack.views;
+}
+
+/**
+ * Measured Meta views that match a target window (e.g. 90 days).
+ * Shorter measured windows are excluded rather than scaled up.
+ */
+export function measuredMetaViewsForDays(pack, targetDays = 90) {
+  const views = measuredMetaViews(pack);
+  if (views == null) return null;
+  if ((pack.days || targetDays) !== targetDays) return null;
+  return views;
+}
+
+/** @deprecated Prefer measuredMetaViews — kept for any leftover imports. */
 export function scaleToDays(pack, targetDays = 90, field = "views") {
   if (!pack || pack[field] == null) return null;
+  if (field === "views" && pack.viewsEstimated) return null;
   const sourceDays = pack.days || 90;
-  return Math.round(pack[field] * (targetDays / sourceDays));
+  if (sourceDays !== targetDays) return null;
+  return pack[field];
 }
 
 export function youtubeImpressions(views, posts) {

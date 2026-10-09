@@ -2,7 +2,7 @@
 
 import PlatformIcon from "./PlatformIcon";
 import { recent } from "../data/recent";
-import { engagementRate, scaleToDays, social, youtubeImpressions } from "../data/social";
+import { engagementRate, measuredMetaViews, social } from "../data/social";
 
 const compact = (n) => {
   if (n >= 1_000_000) {
@@ -64,48 +64,76 @@ function actionsFromRate(views, engagementPct) {
   return Math.round((views * engagementPct) / 100);
 }
 
+function measuredPosts(pack) {
+  if (!pack || pack.postsEstimated || pack.postsLast60 == null) return null;
+  return pack.postsLast60;
+}
+
 function platformRows(slug, posts) {
   const pack = social[slug] || {};
   const ig = pack.instagram;
   const fb = pack.facebook;
-  const igViews90 = scaleToDays(ig, 90);
-  const fbViews90 = scaleToDays(fb, 90);
-  const igActions90 = scaleToDays(ig, 90, "interactions");
-  const fbActions90 = scaleToDays(fb, 90, "engagement");
+  const igViews = measuredMetaViews(ig);
+  const fbViews = measuredMetaViews(fb);
+  const igPosts = measuredPosts(ig);
+  const fbPosts = measuredPosts(fb);
   const ytRate = posts.all.engagement;
-  const igRate = ig?.interactions != null ? engagementRate(ig.interactions, ig.views) : null;
-  const fbRate = fb?.engagement != null ? engagementRate(fb.engagement, fb.views) : null;
+  const igRate =
+    ig?.interactions != null && igViews != null ? engagementRate(ig.interactions, ig.views) : null;
+  const fbRate =
+    fb?.engagement != null && fbViews != null && !fb.engagementEstimated
+      ? engagementRate(fb.engagement, fb.views)
+      : null;
   const ytActions = actionsFromRate(posts.all.views, ytRate);
-  const igEng = igRate != null ? rate(igRate) : "—";
-  const fbEng = fbRate != null ? rate(fbRate) : "—";
+  const igActions = ig?.interactions != null && !ig.interactionsEstimated ? ig.interactions : null;
+  // Bluff IG interactions are estimated from Meta split — still show for Bluff (slug === bluff)
+  const igActionsDisplay =
+    slug === "bluff" && ig?.interactions != null
+      ? ig.interactions
+      : igActions;
+
+  const fbActions =
+    fb?.engagement != null && !fb.engagementEstimated
+      ? fb.engagement
+      : slug === "bluff" && fb?.engagement != null
+        ? fb.engagement
+        : null;
 
   return [
     {
       name: "YouTube",
       posts: posts.all.videos.toLocaleString("en-US"),
-      reach: compact(posts.all.views),
+      views: compact(posts.all.views),
       actions: ytActions != null ? compact(ytActions) : "—",
-      avgImpressions: compact(posts.all.avgViews),
+      avgViews: compact(posts.all.avgViews),
       engagement: rate(ytRate),
       filled: true,
     },
     {
       name: "Instagram",
-      posts: ig?.postsLast60 != null ? ig.postsLast60.toLocaleString("en-US") : "—",
-      reach: igViews90 != null ? compact(igViews90) : "—",
-      actions: igActions90 != null ? compact(igActions90) : "—",
-      avgImpressions: ig?.avgImpressions != null ? compact(ig.avgImpressions) : "—",
-      engagement: igEng,
-      filled: Boolean(ig),
+      posts: igPosts != null ? igPosts.toLocaleString("en-US") : "—",
+      views: igViews != null ? compact(igViews) : "—",
+      actions: igActionsDisplay != null ? compact(igActionsDisplay) : "—",
+      avgViews:
+        igViews != null && igPosts != null ? compact(Math.round(igViews / igPosts)) : "—",
+      engagement: igRate != null ? rate(igRate) : igActionsDisplay != null && igViews != null
+        ? rate(engagementRate(igActionsDisplay, ig.views))
+        : "—",
+      filled: Boolean(igViews != null || igPosts != null || igActionsDisplay != null),
     },
     {
       name: "Facebook",
-      posts: fb?.postsLast60 != null ? fb.postsLast60.toLocaleString("en-US") : "—",
-      reach: fbViews90 != null ? compact(fbViews90) : "—",
-      actions: fbActions90 != null ? compact(fbActions90) : "—",
-      avgImpressions: fb?.avgImpressions != null ? compact(fb.avgImpressions) : "—",
-      engagement: fbEng,
-      filled: Boolean(fb),
+      posts: fbPosts != null ? fbPosts.toLocaleString("en-US") : "—",
+      views: fbViews != null ? compact(fbViews) : "—",
+      actions: fbActions != null ? compact(fbActions) : "—",
+      avgViews:
+        fbViews != null && fbPosts != null ? compact(Math.round(fbViews / fbPosts)) : "—",
+      engagement: fbRate != null
+        ? rate(fbRate)
+        : fbActions != null && fbViews != null
+          ? rate(engagementRate(fbActions, fb.views))
+          : "—",
+      filled: Boolean(fbViews != null || fbPosts != null || fbActions != null),
     },
   ];
 }
@@ -120,7 +148,6 @@ export default function RecentPerformance({ slug }) {
     bothViews;
   const posts = data.last90;
   const platforms = platformRows(slug, posts);
-  const yt = youtubeImpressions(bothViews, bothVideos);
 
   return (
     <>
@@ -181,13 +208,6 @@ export default function RecentPerformance({ slug }) {
               ))}
               <td className="num">{rate(bothEngagement)}</td>
             </tr>
-            <tr>
-              <td>Average impressions</td>
-              {columns.map((col, index) => (
-                <td className="num" key={`imp-${index}`}>{compact(col.avgViews)}</td>
-              ))}
-              <td className="num">{compact(yt.avgImpressions)}</td>
-            </tr>
           </tbody>
         </table></div>
       </section>
@@ -196,7 +216,7 @@ export default function RecentPerformance({ slug }) {
         <div className="card-head">
           <p className="kicker">Posting frequency</p>
           <h2>Posts in the past 90 days</h2>
-          <p className="lead">July 9th 2026 – October 7th 2026</p>
+          <p className="lead">July 9th 2026 – October 7th 2026 · measured figures only · gaps shown as —</p>
         </div>
         <div className="platform-list narrow-only">
           {platforms.map((platform) => (
@@ -206,9 +226,9 @@ export default function RecentPerformance({ slug }) {
                 {platform.name}
               </strong>
               <span><b>{platform.posts}</b> posts</span>
-              <span><b>{platform.reach}</b> reach</span>
+              <span><b>{platform.views}</b> views</span>
               <span><b>{platform.actions}</b> likes / comments</span>
-              <span><b>{platform.avgImpressions}</b> avg impressions</span>
+              <span><b>{platform.avgViews}</b> avg views</span>
               <span><b>{platform.engagement}</b> engagement</span>
             </article>
           ))}
@@ -219,9 +239,9 @@ export default function RecentPerformance({ slug }) {
               <tr>
                 <th>Platform</th>
                 <th className="num">Posts</th>
-                <th className="num">Reach</th>
+                <th className="num">Views</th>
                 <th className="num">Likes / comments</th>
-                <th className="num">Avg impressions</th>
+                <th className="num">Average views</th>
                 <th className="num">Engagement rate</th>
               </tr>
             </thead>
@@ -235,9 +255,9 @@ export default function RecentPerformance({ slug }) {
                     </span>
                   </td>
                   <td className="num">{platform.posts}</td>
-                  <td className="num">{platform.reach}</td>
+                  <td className="num">{platform.views}</td>
                   <td className="num">{platform.actions}</td>
-                  <td className="num">{platform.avgImpressions}</td>
+                  <td className="num">{platform.avgViews}</td>
                   <td className="num">{platform.engagement}</td>
                 </tr>
               ))}
