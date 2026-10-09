@@ -182,6 +182,7 @@ export const studio = {
   "topByWatchTime": [
     {
       "title": "$6900 blackjack hand, the biggest one ever at el Cortez..",
+      "url": "https://www.youtube.com/watch?v=8zS5pCXYHbs",
       "published": "Jun 15, 2024",
       "durationSec": 61,
       "hours": 1400695,
@@ -191,6 +192,7 @@ export const studio = {
     },
     {
       "title": "I Turned My Paycheck Into $100,000",
+      "url": "https://www.youtube.com/watch?v=W4Pp3SQuywc",
       "published": "Oct 3, 2025",
       "durationSec": 4570,
       "hours": 715655,
@@ -200,6 +202,7 @@ export const studio = {
     },
     {
       "title": "We Gambled $100,000 For 500,000 Subscribers!",
+      "url": "https://www.youtube.com/watch?v=c3s57yVJtqk",
       "published": "Jul 28, 2025",
       "durationSec": 4674,
       "hours": 572763,
@@ -209,6 +212,7 @@ export const studio = {
     },
     {
       "title": "The BIGGEST Gambling Wins of 2025!!",
+      "url": "https://www.youtube.com/watch?v=Fvl3UQzNfls",
       "published": "Dec 27, 2025",
       "durationSec": 13901,
       "hours": 490827,
@@ -218,6 +222,7 @@ export const studio = {
     },
     {
       "title": "I Gambled 12 Hours Non-Stop In Vegas",
+      "url": "https://www.youtube.com/watch?v=KTCPihTjoDA",
       "published": "Jun 30, 2025",
       "durationSec": 8158,
       "hours": 483851,
@@ -227,6 +232,7 @@ export const studio = {
     },
     {
       "title": "1 Like = $1 I Gamble at the Casino",
+      "url": "https://www.youtube.com/watch?v=cwK_qtUq_aM",
       "published": "Oct 1, 2025",
       "durationSec": 3467,
       "hours": 421329,
@@ -236,6 +242,7 @@ export const studio = {
     },
     {
       "title": "I Gave My Viewers $10,000 to Gamble",
+      "url": "https://www.youtube.com/watch?v=naCfpKiQMiI",
       "published": "Sep 21, 2025",
       "durationSec": 6973,
       "hours": 358511,

@@ -10,14 +10,14 @@ const montserrat = Montserrat({
 
 export const metadata = {
   metadataBase: new URL("https://partnerships.gotbluff.com"),
-  title: "Partnership brief",
-  description: "Verified YouTube results for Bluff, Brettski, and On Tilt Boys, with open cells for property results.",
+  title: "Team summary · Bluff, Brettski, On Tilt Boys",
+  description: "Combined value of Bluff, Brettski, and On Tilt Boys — team reach and potential property impact for MGM.",
   icons: {
     icon: "/favicon.ico",
   },
   openGraph: {
-    title: "Partnership brief",
-    description: "Verified YouTube results for Bluff, Brettski, and On Tilt Boys, with open cells for property results.",
+    title: "Team summary · Bluff, Brettski, On Tilt Boys",
+    description: "Combined value of Bluff, Brettski, and On Tilt Boys — team reach and potential property impact for MGM.",
     url: "https://partnerships.gotbluff.com",
     siteName: "Bluff",
     type: "website",
@@ -32,8 +32,8 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Partnership brief",
-    description: "Verified YouTube results for Bluff, Brettski, and On Tilt Boys, with open cells for property results.",
+    title: "Team summary · Bluff, Brettski, On Tilt Boys",
+    description: "Combined value of Bluff, Brettski, and On Tilt Boys — team reach and potential property impact for MGM.",
     images: ["/og-image.png"],
   },
 };

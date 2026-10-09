@@ -36,7 +36,6 @@ export default function AudienceMap({
   const [x, y, width, height] = usMap.viewBox;
   const byName = Object.fromEntries(states.map((state) => [state.name, state]));
   const maxHours = states[0]?.hours || 0;
-  const nevada = byName.Nevada;
 
   return (
     <div className="map-layout">
@@ -108,17 +107,7 @@ export default function AudienceMap({
             ))}
           </tbody>
         </table></div>
-        <p className="caption">
-          {caption || (
-            <>
-              Nevada is {nevada?.hourShare}% of U.S. watch time, {compact(nevada?.views || 0)} views.{" "}
-              {estimated
-                ? "State shares are Bluff’s measured mix, applied here."
-                : "Shares are of the U.S. total."}{" "}
-              About 19% of U.S. watch time is not tied to a state, so it is not colored on the map.
-            </>
-          )}
-        </p>
+        {caption ? <p className="caption">{caption}</p> : null}
       </div>
     </div>
   );

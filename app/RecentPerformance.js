@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import PlatformIcon from "./PlatformIcon";
 import { recent } from "../data/recent";
 import { engagementRate, social, youtubeImpressions } from "../data/social";
 
@@ -64,79 +64,18 @@ function actionsFromRate(views, engagementPct) {
   return Math.round((views * engagementPct) / 100);
 }
 
-function PlatformIcon({ name }) {
-  const gradId = useId().replace(/:/g, "");
-  if (name === "YouTube") {
-    return (
-      <svg className="platform-icon youtube-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          fill="#FF0000"
-          d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.5 31.5 0 0 0 0 12a31.5 31.5 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.5 31.5 0 0 0 24 12a31.5 31.5 0 0 0-.5-5.8z"
-        />
-        <path fill="#fff" d="M9.75 15.5v-7L16 12l-6.25 3.5z" />
-      </svg>
-    );
-  }
-  if (name === "Instagram") {
-    return (
-      <svg className="platform-icon instagram-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <defs>
-          <linearGradient id={gradId} x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#f58529" />
-            <stop offset="50%" stopColor="#dd2a7b" />
-            <stop offset="100%" stopColor="#515bd4" />
-          </linearGradient>
-        </defs>
-        <rect x="2" y="2" width="20" height="20" rx="5" fill={`url(#${gradId})`} />
-        <circle cx="12" cy="12" r="4.2" fill="none" stroke="#fff" strokeWidth="1.8" />
-        <circle cx="17.2" cy="6.8" r="1.2" fill="#fff" />
-      </svg>
-    );
-  }
-  if (name === "Facebook") {
-    return (
-      <svg className="platform-icon facebook-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          fill="#1877F2"
-          d="M24 12.07C24 5.41 18.63 0 12 0S0 5.41 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.8-4.7 4.54-4.7 1.32 0 2.7.24 2.7.24v2.97h-1.52c-1.5 0-1.97.93-1.97 1.89v2.26h3.35l-.54 3.49h-2.81V24C19.61 23.1 24 18.1 24 12.07z"
-        />
-      </svg>
-    );
-  }
-  return null;
-}
-
 function platformRows(slug, posts) {
   const pack = social[slug] || {};
   const ig = pack.instagram;
   const fb = pack.facebook;
-  const meta = pack.meta;
   const ytRate = posts.all.engagement;
   const igRate = ig?.interactions != null ? engagementRate(ig.interactions, ig.views) : null;
-  const fbRate =
-    slug === "brettski"
-      ? 2.8
-      : fb?.engagement != null
-        ? engagementRate(fb.engagement, fb.views)
-        : null;
-  const metaRate = meta ? engagementRate(meta.interactions, meta.views) : null;
-  const igRateUsed = igRate ?? (slug === "bluff" ? metaRate : null);
-  const fbRateUsed = fbRate ?? (slug === "bluff" ? metaRate : null);
+  const fbRate = fb?.engagement != null ? engagementRate(fb.engagement, fb.views) : null;
   const ytActions = actionsFromRate(posts.all.views, ytRate);
-  const igActions =
-    ig?.interactions != null
-      ? ig.interactions
-      : ig && igRateUsed != null
-        ? actionsFromRate(ig.views, igRateUsed)
-        : null;
-  const fbActions =
-    fb?.engagement != null && slug !== "brettski"
-      ? fb.engagement
-      : fb && fbRateUsed != null
-        ? actionsFromRate(fb.views, fbRateUsed)
-        : null;
-  const igEng = igRateUsed != null ? rate(igRateUsed) : "—";
-  const fbEng = fbRateUsed != null ? rate(fbRateUsed) : "—";
+  const igActions = ig?.interactions != null ? ig.interactions : null;
+  const fbActions = fb?.engagement != null ? fb.engagement : null;
+  const igEng = igRate != null ? rate(igRate) : "—";
+  const fbEng = fbRate != null ? rate(fbRate) : "—";
 
   return [
     {
@@ -254,8 +193,8 @@ export default function RecentPerformance({ slug }) {
       <section className="card">
         <div className="card-head">
           <p className="kicker">Posting frequency</p>
-          <h2>Posts in the last 60 days</h2>
-          <p className="lead">August 9th 2026 – October 7th 2026</p>
+          <h2>Posts in the past 90 days</h2>
+          <p className="lead">July 9th 2026 – October 7th 2026</p>
         </div>
         <div className="platform-list narrow-only">
           {platforms.map((platform) => (

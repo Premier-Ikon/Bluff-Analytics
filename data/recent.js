@@ -68,6 +68,29 @@ export const recent = {
         "engagement": 3.05,
         "hiddenLikes": 0
       }
+    },
+    "last90": {
+      "all": {
+        "videos": 144,
+        "views": 47994858,
+        "avgViews": 333298,
+        "engagement": 3.11,
+        "hiddenLikes": 0
+      },
+      "shorts": {
+        "videos": 53,
+        "views": 24545517,
+        "avgViews": 463123,
+        "engagement": 3.11,
+        "hiddenLikes": 0
+      },
+      "longform": {
+        "videos": 91,
+        "views": 23449341,
+        "avgViews": 257685,
+        "engagement": 3.11,
+        "hiddenLikes": 0
+      }
     }
   },
   "brettski": {
@@ -139,6 +162,29 @@ export const recent = {
         "engagement": 2.8,
         "hiddenLikes": 0
       }
+    },
+    "last90": {
+      "all": {
+        "videos": 276,
+        "views": 47903945,
+        "avgViews": 173565,
+        "engagement": 3.12,
+        "hiddenLikes": 0
+      },
+      "shorts": {
+        "videos": 185,
+        "views": 31682745,
+        "avgViews": 171258,
+        "engagement": 3.12,
+        "hiddenLikes": 0
+      },
+      "longform": {
+        "videos": 91,
+        "views": 16221200,
+        "avgViews": 178255,
+        "engagement": 3.12,
+        "hiddenLikes": 0
+      }
     }
   },
   "ontilt": {
@@ -208,6 +254,29 @@ export const recent = {
         "views": 8872733,
         "avgViews": 147879,
         "engagement": 2.69,
+        "hiddenLikes": 0
+      }
+    },
+    "last90": {
+      "all": {
+        "videos": 182,
+        "views": 39280797,
+        "avgViews": 215829,
+        "engagement": 2.6,
+        "hiddenLikes": 0
+      },
+      "shorts": {
+        "videos": 92,
+        "views": 28745938,
+        "avgViews": 312456,
+        "engagement": 2.6,
+        "hiddenLikes": 0
+      },
+      "longform": {
+        "videos": 90,
+        "views": 10534859,
+        "avgViews": 117054,
+        "engagement": 2.6,
         "hiddenLikes": 0
       }
     }

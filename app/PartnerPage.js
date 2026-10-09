@@ -1,7 +1,7 @@
 "use client";
 
 // import AudienceMap from "./AudienceMap";
-import FormatSplit, { splitWatchHours } from "./FormatSplit";
+import { splitWatchHours } from "./FormatSplit";
 import RecentPerformance from "./RecentPerformance";
 import SocialChannels from "./SocialChannels";
 import WatchChart, { yearRows } from "./WatchChart";
@@ -42,6 +42,26 @@ function prettyClock(value) {
   return value;
 }
 
+function clockSeconds(value) {
+  const parts = String(value).split(":").map((part) => Number(part));
+  if (parts.some((part) => Number.isNaN(part))) return null;
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  return null;
+}
+
+function contentType(row) {
+  if (row.format === "short" || row.format === "shorts") return "Short-form";
+  if (row.format === "long" || row.format === "long-form") return "Long-form";
+  // YouTube Shorts max length is 3 minutes
+  if (typeof row.durationSec === "number") {
+    return row.durationSec <= 180 ? "Short-form" : "Long-form";
+  }
+  const avg = clockSeconds(row.avgDuration);
+  if (avg != null && avg <= 60) return "Short-form";
+  return "Long-form";
+}
+
 function studioWatchMonths(studioMonths, format) {
   const mix = Object.fromEntries(format.months.map((item) => [item.key, item]));
   return studioMonths.filter((item) => item.key >= "2025-10").map((item) => {
@@ -65,10 +85,6 @@ export default function PartnerPage({ partner }) {
   const watchHours = partner.watchHours ?? partner.estimatedHours;
   const watchMeasured = Boolean(partner.watchMeasured);
   const hours = splitWatchHours(watchHours, format);
-  const leadProperty = partner.properties[0];
-  const other = partner.properties.slice(1);
-  const otherViews = other.reduce((sum, row) => sum + row.views, 0);
-  const titleMentions = partner.properties.reduce((sum, row) => sum + row.videos, 0);
   const chartMonths = watchMeasured && partner.studioMonths
     ? studioWatchMonths(partner.studioMonths, format)
     : format.months;
@@ -79,7 +95,11 @@ export default function PartnerPage({ partner }) {
         <div className="wordmark">
           <span className="accent-bar" />
           <div>
-            <div className="brand-name">{partner.name}</div>
+            <img
+              className={`brand-logo brand-logo-${partner.slug}`}
+              src={`/logos/${partner.slug}.png`}
+              alt={partner.name}
+            />
             <div className="brand-meta">
               <a href={partner.url} target="_blank" rel="noopener noreferrer">{partner.handle}</a>
               {" · Creator dashboard · "}
@@ -117,8 +137,6 @@ export default function PartnerPage({ partner }) {
 
         <SocialChannels slug={partner.slug} />
 
-        <FormatSplit format={format} />
-
         {/* <section className="card">
           <div className="card-head">
             <h2>Where the audience watches</h2>
@@ -131,11 +149,6 @@ export default function PartnerPage({ partner }) {
           <div className="card-head">
             <p className="kicker">Watch time trend</p>
             <h2>Hours watched each month</h2>
-            <p className="lead">
-              {watchMeasured
-                ? "Measured hours from October 2025 through October 2026. Red is Shorts and black is long-form, split by the videos posted that month."
-                : "Estimated hours on videos posted from October 2025 through October 2026. Red is Shorts and black is long-form. A short is capped at its own length."}
-            </p>
           </div>
           <WatchChart months={chartMonths} />
           <div className="table-scroll">
@@ -160,60 +173,6 @@ export default function PartnerPage({ partner }) {
 
         <section className="card">
           <div className="card-head">
-            <p className="kicker">Casino publicity</p>
-            <h2>What a property gets on camera</h2>
-            <p className="lead">
-              {`Counted when the title names the casino${partner.propertyNote ? ` or ${partner.propertyNote}` : ""}. ${partner.shorts.toLocaleString("en-US")} of the public videos are Shorts. ${partner.videos.toLocaleString("en-US")} public videos in total.`}
-            </p>
-          </div>
-          <div className="band">
-            <article className="mini">
-              <div className="mini-label">{leadProperty.name}</div>
-              <div className="mini-value">{compact(leadProperty.views)}</div>
-              <div className="metric-hint">
-                Views on {leadProperty.videos.toLocaleString("en-US")}{" "}
-                {leadProperty.videos === 1 ? "video" : "videos"} that name it.
-              </div>
-            </article>
-            <article className="mini">
-              <div className="mini-label">Other properties</div>
-              <div className="mini-value">{compact(otherViews)}</div>
-              <div className="metric-hint">
-                Views across {other.length} more {other.length === 1 ? "casino" : "casinos"} named on camera.
-              </div>
-            </article>
-            <article className="mini">
-              <div className="mini-label">Title mentions</div>
-              <div className="mini-value">{titleMentions.toLocaleString("en-US")}</div>
-              <div className="metric-hint">Videos whose title names one of these casinos.</div>
-            </article>
-          </div>
-          <div className="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Property</th>
-                  <th>Market</th>
-                  <th className="num">Videos</th>
-                  <th className="num">Views</th>
-                </tr>
-              </thead>
-              <tbody>
-                {partner.properties.map((row) => (
-                  <tr key={row.name}>
-                    <td>{row.name}</td>
-                    <td>{row.where}</td>
-                    <td className="num">{row.videos.toLocaleString("en-US")}</td>
-                    <td className="num">{compact(row.views)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section className="card">
-          <div className="card-head">
             <p className="kicker">Top content</p>
             <h2>Most hours watched</h2>
             <p className="lead">
@@ -227,6 +186,7 @@ export default function PartnerPage({ partner }) {
               <thead>
                 <tr>
                   <th>Title</th>
+                  <th>Content type</th>
                   <th>Published</th>
                   <th className="num">Views</th>
                   <th className="num">Watch time</th>
@@ -236,7 +196,16 @@ export default function PartnerPage({ partner }) {
               <tbody>
                 {partner.top.map((row) => (
                   <tr key={row.title}>
-                    <td className="title">{row.title}</td>
+                    <td className="title">
+                      {row.url ? (
+                        <a href={row.url} target="_blank" rel="noopener noreferrer">
+                          {row.title}
+                        </a>
+                      ) : (
+                        row.title
+                      )}
+                    </td>
+                    <td>{contentType(row)}</td>
                     <td>{row.published}</td>
                     <td className="num">{compact(row.views)}</td>
                     <td className="num">{compact(row.hours)} h</td>

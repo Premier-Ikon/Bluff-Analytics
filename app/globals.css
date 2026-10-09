@@ -69,6 +69,24 @@ td a:hover {
   letter-spacing: -0.02em;
 }
 
+.brand-logo {
+  display: block;
+  height: 28px;
+  width: auto;
+  max-width: min(220px, 55vw);
+  object-fit: contain;
+  object-position: left center;
+}
+
+.brand-logo-ontilt {
+  height: 36px;
+  max-width: min(260px, 60vw);
+}
+
+.brand-logo-brettski {
+  height: 26px;
+}
+
 .brand-meta {
   margin-top: 1px;
   color: var(--muted);
@@ -386,6 +404,23 @@ h2 {
   font-weight: 600;
 }
 
+.platform-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.audience-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.audience-grid-cities {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .platform-list .platform-name {
   grid-column: 1 / -1;
 }
@@ -419,15 +454,54 @@ h2 {
 }
 
 .hero-stats article {
-  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  min-height: 92px;
+  padding: 18px 16px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.04);
 }
 
-.hero-stats .metric-label { color: rgba(255, 255, 255, 0.5); }
-.hero-stats .metric-value { color: #fff; font-size: 26px; }
-.hero-stats .metric-hint { color: rgba(255, 255, 255, 0.45); }
+.hero-stats .metric-label {
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+.hero-stats .metric-label-with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-stats .metric-label-with-icon .platform-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.hero-stats .metric-value {
+  color: #fff;
+  font-size: 28px;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.hero-stats .metric-hint { display: none; }
+
+.hero-platforms {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+.hero-platforms .platform-icon {
+  width: 22px;
+  height: 22px;
+}
 
 .legend {
   display: flex;
@@ -508,6 +582,61 @@ h2 {
 
 .creator-card-top h3 { margin: 0; font-size: 18px; }
 
+.creator-logo-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  border-bottom: none !important;
+}
+
+th a.creator-logo-link,
+td a.creator-logo-link {
+  border-bottom: none;
+}
+
+th a.creator-logo-link:hover,
+td a.creator-logo-link:hover {
+  border-bottom: none;
+}
+
+.creator-logo {
+  display: block;
+  height: 28px;
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.creator-logo-ontilt {
+  height: 34px;
+  max-width: 180px;
+}
+
+.creator-logo-brettski {
+  height: 24px;
+}
+
+.creator-logo-table {
+  height: 22px;
+  max-width: 120px;
+  margin-left: auto;
+}
+
+.creator-logo-ontilt.creator-logo-table {
+  height: 28px;
+  max-width: 140px;
+}
+
+th.creator-logo-th {
+  vertical-align: middle;
+}
+
+th.creator-logo-th .creator-logo-link {
+  justify-content: flex-end;
+  width: 100%;
+}
+
 .ghost-link {
   color: var(--muted);
   font-size: 12px;
@@ -516,6 +645,28 @@ h2 {
 }
 
 .ghost-link:hover { color: var(--red); }
+
+.creator-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--red);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.creator-open:hover {
+  background: var(--red-dark);
+  color: #fff;
+  transform: translateY(-1px);
+}
 
 .creator-kpis {
   display: grid;
@@ -975,6 +1126,18 @@ th.num, td.num {
 
 td.title { width: 46%; padding-right: 20px; }
 
+td.title a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 150ms ease, color 150ms ease;
+}
+
+td.title a:hover {
+  color: var(--red);
+  border-bottom-color: currentColor;
+}
+
 tbody tr:hover td { background: var(--red-soft); }
 
 .videos + .videos { margin-top: 8px; }
@@ -1010,7 +1173,7 @@ h3 {
 @media (max-width: 860px) {
   .switcher, .bar, .page { padding-left: 16px; padding-right: 16px; }
   .metrics, .split-stats, .band, .map-layout, .posts, .blank-grid { grid-template-columns: 1fr 1fr; }
-  .questions { grid-template-columns: 1fr; }
+  .questions, .audience-grid, .audience-grid-cities { grid-template-columns: 1fr; }
   .metric-value { font-size: 26px; }
   .hero-copy h1 { font-size: 24px; }
   .card { padding: 16px 14px 8px; }

@@ -290,6 +290,7 @@ export const partners = {
     "top": [
       {
         "title": "ARE YOU NOT ENTERTAINED?!? FOLLOW US!",
+        "url": "https://www.youtube.com/watch?v=Ds_SN3kd1gA",
         "published": "Feb 3, 2026",
         "views": 5339530,
         "hours": 265493,
@@ -297,6 +298,7 @@ export const partners = {
       },
       {
         "title": "MILLIONS OF DOLLARS IN SLOT SPINS! (YOUTUBE RECORD)",
+        "url": "https://www.youtube.com/watch?v=A3bG9gi0WmM",
         "published": "Jan 13, 2024",
         "views": 3407015,
         "hours": 251411,
@@ -304,6 +306,7 @@ export const partners = {
       },
       {
         "title": "Nobody Is hotter at Slots than @Bluffinbob",
+        "url": "https://www.youtube.com/watch?v=nlpUK6ZSadE",
         "published": "Jun 11, 2026",
         "views": 4600529,
         "hours": 230026,
@@ -311,6 +314,7 @@ export const partners = {
       },
       {
         "title": "I heard this rumor…",
+        "url": "https://www.youtube.com/watch?v=IGTn-TKafKU",
         "published": "Jan 31, 2024",
         "views": 10471705,
         "hours": 171620,
@@ -318,6 +322,7 @@ export const partners = {
       },
       {
         "title": "BIGGEST SLOT SESSION IN YOUTUBE HISTORY! ($1,000,000+)",
+        "url": "https://www.youtube.com/watch?v=yQzTVzZiohQ",
         "published": "Jan 22, 2024",
         "views": 1901365,
         "hours": 140306,
@@ -325,6 +330,7 @@ export const partners = {
       },
       {
         "title": "MY BIGGEST BONUS EVER. ON A WAGER SAVER BABY!",
+        "url": "https://www.youtube.com/watch?v=UxmasQgZiZw",
         "published": "Dec 14, 2025",
         "views": 2780501,
         "hours": 128984,
@@ -332,6 +338,7 @@ export const partners = {
       },
       {
         "title": "WE GOT THE BEST BONUS!",
+        "url": "https://www.youtube.com/watch?v=dGahcdnCuQY",
         "published": "Jun 13, 2026",
         "views": 2265639,
         "hours": 112023,
@@ -1022,6 +1029,7 @@ export const partners = {
     "top": [
       {
         "title": "THE GREATEST COMEBACK IN GAMBLING HISTORY!!! 😱",
+        "url": "https://www.youtube.com/watch?v=MwyxVFAq33w",
         "published": "Aug 13, 2026",
         "views": 5305910,
         "hours": 263822,
@@ -1029,6 +1037,7 @@ export const partners = {
       },
       {
         "title": "WE JUST HIT THE $1,500,000 GRAND!!! 😱",
+        "url": "https://www.youtube.com/watch?v=11765Zw5o4g",
         "published": "Jun 10, 2026",
         "views": 4503526,
         "hours": 198906,
@@ -1036,6 +1045,7 @@ export const partners = {
       },
       {
         "title": "WE JUST HIT THE GRAND JACKPOT!!! 🤑",
+        "url": "https://www.youtube.com/watch?v=EZ7SYvrr9gM",
         "published": "Aug 31, 2026",
         "views": 3514410,
         "hours": 175721,
@@ -1043,6 +1053,7 @@ export const partners = {
       },
       {
         "title": "$200 on EVERY hand in Blackjack! 😳",
+        "url": "https://www.youtube.com/watch?v=Y5RgAV_nYr4",
         "published": "Aug 24, 2025",
         "views": 2928238,
         "hours": 122823,
@@ -1050,6 +1061,7 @@ export const partners = {
       },
       {
         "title": "This $800 Blackjack Run was CRAZY! 😳",
+        "url": "https://www.youtube.com/watch?v=t6BGbZGE2OU",
         "published": "Aug 5, 2025",
         "views": 3372097,
         "hours": 120833,
@@ -1057,6 +1069,7 @@ export const partners = {
       },
       {
         "title": "Can we turn $1,000 into $9,400?! 😳",
+        "url": "https://www.youtube.com/watch?v=KQ-5uIIcHDg",
         "published": "May 27, 2026",
         "views": 2147011,
         "hours": 101983,
@@ -1064,6 +1077,7 @@ export const partners = {
       },
       {
         "title": "PETER GRIFFIN GOES ALL IN AND GETS TWO STRAIGHTS?!",
+        "url": "https://www.youtube.com/watch?v=6_bkQkxxO2c",
         "published": "Sep 23, 2023",
         "views": 5839019,
         "hours": 97317,
