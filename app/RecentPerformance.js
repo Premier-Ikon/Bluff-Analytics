@@ -158,9 +158,7 @@ export default function RecentPerformance({ slug }) {
             YouTube performance
           </p>
           <h2>Q2 + Q3 2026</h2>
-          <p className="lead">
-            Lifetime views on videos published Apr 1 – Sep 30 — not the same as monthly watch hours below, which count time watched on the whole channel (including older uploads).
-          </p>
+          <p className="lead">Lifetime views on videos published Apr 1 – Sep 30</p>
         </div>
         <QuarterCards
           columns={columns}
@@ -219,7 +217,7 @@ export default function RecentPerformance({ slug }) {
         <div className="card-head">
           <p className="kicker">Posting frequency</p>
           <h2>Posts in the past 90 days</h2>
-          <p className="lead">July 9th 2026 – October 7th 2026 · measured figures only · gaps shown as —</p>
+          <p className="lead">July 9th 2026 – October 7th 2026</p>
         </div>
         <div className="platform-list narrow-only">
           {platforms.map((platform) => (

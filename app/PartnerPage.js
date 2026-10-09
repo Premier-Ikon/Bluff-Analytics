@@ -175,11 +175,6 @@ export default function PartnerPage({ partner }) {
           <div className="card-head">
             <p className="kicker">Top content</p>
             <h2>Most hours watched</h2>
-            <p className="lead">
-              {watchMeasured
-                ? "Measured watch time from YouTube Studio."
-                : "Watch time is estimated from the length of each video, capped at 4 minutes 26 seconds."}
-            </p>
           </div>
           <div className="table-scroll">
             <table>
