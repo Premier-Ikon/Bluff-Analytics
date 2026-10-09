@@ -141,6 +141,10 @@ td a:hover {
   gap: 12px;
 }
 
+.metrics.metrics-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .metric,
 .card,
 .split-stat,
@@ -1177,7 +1181,7 @@ h3 {
 
 @media (max-width: 860px) {
   .switcher, .bar, .page { padding-left: 16px; padding-right: 16px; }
-  .metrics, .split-stats, .band, .map-layout, .posts, .blank-grid { grid-template-columns: 1fr 1fr; }
+  .metrics, .metrics.metrics-3, .split-stats, .band, .map-layout, .posts, .blank-grid { grid-template-columns: 1fr 1fr; }
   .questions, .audience-grid, .audience-grid-cities { grid-template-columns: 1fr; }
   .metric-value { font-size: 26px; }
   .hero-copy h1 { font-size: 24px; }

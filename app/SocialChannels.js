@@ -89,13 +89,6 @@ export default function SocialChannels({ slug }) {
   const topCountries = (audience.countries || []).slice(0, 5);
   const topCities = (audience.cities || []).slice(0, 5);
 
-  const reachValue = ig?.reach ?? ig?.viewers ?? null;
-  const reachHint = ig?.reach != null
-    ? "Meta reach · measured window"
-    : ig?.viewers != null
-      ? "Unique viewers · Insights"
-      : "—";
-
   const followersValue = ig?.followers != null
     ? compact(ig.followers)
     : ig?.netFollowers != null
@@ -121,7 +114,7 @@ export default function SocialChannels({ slug }) {
           <h2>Instagram performance</h2>
           <p className="lead">{windowLead(ig, "Measured Instagram window")}</p>
         </div>
-        <div className="metrics package">
+        <div className="metrics metrics-3 package">
           <Metric
             label="Views"
             value={igViews != null ? compact(igViews) : "—"}
@@ -140,7 +133,6 @@ export default function SocialChannels({ slug }) {
                 : "—"
             }
           />
-          <Metric label="Reach / viewers" value={compact(reachValue)} hint={reachHint} />
           <Metric label="Followers" value={followersValue} hint={followersHint} />
         </div>
       </section>
@@ -158,7 +150,7 @@ export default function SocialChannels({ slug }) {
               : "No measured Facebook export yet"}
           </p>
         </div>
-        <div className="metrics package">
+        <div className="metrics metrics-3 package">
           <Metric
             label="Views"
             value={fbViews != null ? compact(fbViews) : "—"}
