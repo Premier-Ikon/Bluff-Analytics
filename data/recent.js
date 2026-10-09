@@ -3,45 +3,45 @@ export const recent = {
     "q2": {
       "all": {
         "videos": 149,
-        "views": 67655591,
-        "avgViews": 454064,
+        "views": 67717089,
+        "avgViews": 454477,
         "engagement": 2.78,
         "hiddenLikes": 0
       },
       "shorts": {
-        "videos": 56,
-        "views": 48023789,
-        "avgViews": 857568,
-        "engagement": 2.44,
+        "videos": 55,
+        "views": 45472924,
+        "avgViews": 826780,
+        "engagement": 2.5,
         "hiddenLikes": 0
       },
       "longform": {
-        "videos": 93,
-        "views": 19631802,
-        "avgViews": 211095,
-        "engagement": 3.61,
+        "videos": 94,
+        "views": 22244165,
+        "avgViews": 236640,
+        "engagement": 3.36,
         "hiddenLikes": 0
       }
     },
     "q3": {
       "all": {
         "videos": 143,
-        "views": 48202334,
-        "avgViews": 337079,
+        "views": 48364406,
+        "avgViews": 338213,
         "engagement": 3.06,
         "hiddenLikes": 0
       },
       "shorts": {
         "videos": 51,
-        "views": 25277272,
-        "avgViews": 495633,
+        "views": 25399181,
+        "avgViews": 498023,
         "engagement": 2.81,
         "hiddenLikes": 0
       },
       "longform": {
         "videos": 92,
-        "views": 22925062,
-        "avgViews": 249185,
+        "views": 22965225,
+        "avgViews": 249622,
         "engagement": 3.34,
         "hiddenLikes": 0
       }

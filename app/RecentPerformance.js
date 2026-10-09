@@ -158,6 +158,9 @@ export default function RecentPerformance({ slug }) {
             YouTube performance
           </p>
           <h2>Q2 + Q3 2026</h2>
+          <p className="lead">
+            Lifetime views on videos published Apr 1 – Sep 30 — not the same as monthly watch hours below, which count time watched on the whole channel (including older uploads).
+          </p>
         </div>
         <QuarterCards
           columns={columns}

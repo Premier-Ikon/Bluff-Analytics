@@ -4,7 +4,7 @@ import Link from "next/link";
 import AudienceMap from "./AudienceMap";
 import PlatformIcon from "./PlatformIcon";
 import { recent } from "../data/recent";
-import { measuredMetaViewsForDays, social } from "../data/social";
+import { measuredMetaViews, measuredMetaViewsForDays, social } from "../data/social";
 import { usStates } from "../data/states";
 
 const ROSTER_GEO_SCALE = 3;
@@ -77,10 +77,11 @@ function last90Stats(slug) {
 
 const teamYtViews = creators.reduce((sum, creator) => sum + last90Stats(creator.slug).views, 0);
 
-/** Meta team rollups: measured only. FB = Bluff 90d; IG = Bluff + Brettski 90d (On Tilt is 60d). */
-const instagramViews =
-  (measuredMetaViewsForDays(social.bluff?.instagram, 90) || 0) +
-  (measuredMetaViewsForDays(social.brettski?.instagram, 90) || 0);
+/** Meta team rollups: measured only. IG = all three; FB = Bluff 90d (partners pending). */
+const instagramViews = creators.reduce(
+  (sum, creator) => sum + (measuredMetaViews(social[creator.slug]?.instagram) || 0),
+  0,
+);
 const facebookViews = measuredMetaViewsForDays(social.bluff?.facebook, 90) || 0;
 const totalSubs = creators.reduce((sum, creator) => sum + creator.subscribers, 0);
 
@@ -169,10 +170,10 @@ export default function Page() {
             <article>
               <div className="metric-label metric-label-with-icon">
                 <PlatformIcon name="Instagram" />
-                Instagram views · measured
+                Instagram views · team
               </div>
               <div className="metric-value">{compact(instagramViews)}</div>
-              <div className="metric-hint">Bluff + Brettski · 90d</div>
+              <div className="metric-hint">Bluff · Brettski · On Tilt</div>
             </article>
             <article>
               <div className="metric-label">Combined subscribers</div>
@@ -187,7 +188,7 @@ export default function Page() {
             <h2>Team reach in market</h2>
             <p className="big-num">{compact(potential30)} views</p>
             <p>
-              YouTube team run-rate plus measured Meta only (Bluff Facebook · Bluff + Brettski Instagram). Gaps left out until partner exports land.
+              YouTube team run-rate plus measured Meta (Instagram across all three · Bluff Facebook). Partner Facebook pending export.
             </p>
           </article>
           <article>
@@ -268,7 +269,7 @@ export default function Page() {
                   <tr>
                     <td>Instagram views</td>
                     {creators.map((creator) => {
-                      const views = cellViews90(social[creator.slug]?.instagram);
+                      const views = measuredMetaViews(social[creator.slug]?.instagram);
                       return <td className="num" key={creator.slug}>{views != null ? compact(views) : "—"}</td>;
                     })}
                   </tr>
