@@ -4,8 +4,8 @@
  * Bluff: full Meta exports — keep as-is (measured / client-ready).
  * Brettski: Instagram Insights screenshots only. Facebook and Meta post counts
  *   were estimates → omitted (null) so the UI shows "—".
- * On Tilt: Instagram Insights (60d) + Facebook Professional dashboard (28d).
- *   Post counts and any scaled-to-90d guesses → omitted.
+ * On Tilt: Instagram Insights (60d views) + Facebook Professional (28d views).
+ *   IG/FB post counts measured from Meta content exports Jul 10–Oct 7.
  *
  * Team summaries should only roll up measured Meta values (see measuredMetaViews).
  */
@@ -291,13 +291,16 @@ export const social = {
         ],
         peakActive: "12 PM – 6 PM PDT · strongest Thu–Fri",
       },
-      postsLast60: null,
-      postsEstimated: true,
+      // Meta content export Jul 10–Oct 7 · @theontiltboys only (excludes collab accounts)
+      postsLast60: 183,
+      postsLast60Breakdown: { reels: 174, carousels: 8, images: 1 },
+      postsEstimated: false,
       impressions: null,
       impressionsEstimated: true,
-      avgImpressions: null,
+      avgImpressions: avgFromTotal(37492956, 183),
       avgReach: null,
-      source: "Instagram Insights screenshots · post counts omitted (no export)",
+      source:
+        "Instagram Insights screenshots · posts from Meta content export Jul 10–Oct 7 (@theontiltboys)",
     },
     facebook: {
       window: "Last 28 days",
@@ -309,12 +312,15 @@ export const social = {
       follows: 14809,
       followsEstimated: false,
       earnings: 0,
-      postsLast60: null,
-      postsEstimated: true,
+      // Meta content export Jul 10–Oct 7 · The OnTilt Boys page
+      postsLast60: 81,
+      postsLast60Breakdown: { videos: 65, photos: 9, text: 7 },
+      postsEstimated: false,
       impressions: null,
       impressionsEstimated: true,
-      avgImpressions: null,
-      source: "Meta Professional dashboard · post counts omitted (no export)",
+      avgImpressions: avgFromTotal(12000000, 81),
+      source:
+        "Meta Professional dashboard (views) · posts from Meta content export Jul 10–Oct 7",
     },
   },
 };

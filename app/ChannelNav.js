@@ -8,6 +8,7 @@ const links = [
   { href: "/bluff", label: "Bluff" },
   { href: "/brettski", label: "Brettski" },
   { href: "/ontilt", label: "On Tilt Boys" },
+  { href: "/impact", label: "Property impact" },
 ];
 
 export default function ChannelNav() {

@@ -91,14 +91,29 @@ export default function SocialChannels({ slug }) {
 
   const igPosts =
     ig && !ig.postsEstimated && ig.postsLast60 != null ? ig.postsLast60 : null;
-  const igPostsHint = igPosts != null
-    ? ig.postsLast60Breakdown
-      ? `${ig.postsLast60Breakdown.feed} feed · ${ig.postsLast60Breakdown.stories} stories`
-      : daysHint(ig)
-    : "—";
+  const igBreakdown = ig?.postsLast60Breakdown;
+  const igPostsHint = (() => {
+    if (igPosts == null) return "—";
+    if (!igBreakdown) return "Jul 10 – Oct 7 export";
+    if (igBreakdown.feed != null || igBreakdown.stories != null) {
+      return `${igBreakdown.feed || 0} feed · ${igBreakdown.stories || 0} stories`;
+    }
+    if (igBreakdown.reels != null) {
+      return `${igBreakdown.reels} reels · ${igBreakdown.carousels || 0} carousels · ${igBreakdown.images || 0} images`;
+    }
+    return "Jul 10 – Oct 7 export";
+  })();
 
   const fbPosts =
     fb && !fb.postsEstimated && fb.postsLast60 != null ? fb.postsLast60 : null;
+  const fbBreakdown = fb?.postsLast60Breakdown;
+  const fbPostsHint = (() => {
+    if (fbPosts == null) return "—";
+    if (fbBreakdown?.videos != null) {
+      return `${fbBreakdown.videos} videos · ${fbBreakdown.photos || 0} photos · ${fbBreakdown.text || 0} text`;
+    }
+    return daysHint(fb);
+  })();
 
   return (
     <>
@@ -169,7 +184,7 @@ export default function SocialChannels({ slug }) {
           <Metric
             label="Posts"
             value={fbPosts != null ? fbPosts.toLocaleString("en-US") : "—"}
-            hint={fbPosts != null ? daysHint(fb) : "—"}
+            hint={fbPostsHint}
           />
         </div>
       </section>
