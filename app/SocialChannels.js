@@ -89,16 +89,13 @@ export default function SocialChannels({ slug }) {
   const topCountries = (audience.countries || []).slice(0, 5);
   const topCities = (audience.cities || []).slice(0, 5);
 
-  const followersValue = ig?.followers != null
-    ? compact(ig.followers)
-    : ig?.netFollowers != null
-      ? `+${compact(ig.netFollowers)}`
-      : "—";
-  const followersHint = ig?.followers != null
-    ? `+${compact(ig.netFollowers)} in window · +${ig.followerGrowthPct}%`
-    : ig?.netFollowers != null
-      ? `Net follows · ${daysHint(ig)}`
-      : "—";
+  const igPosts =
+    ig && !ig.postsEstimated && ig.postsLast60 != null ? ig.postsLast60 : null;
+  const igPostsHint = igPosts != null
+    ? ig.postsLast60Breakdown
+      ? `${ig.postsLast60Breakdown.feed} feed · ${ig.postsLast60Breakdown.stories} stories`
+      : daysHint(ig)
+    : "—";
 
   const fbPosts =
     fb && !fb.postsEstimated && fb.postsLast60 != null ? fb.postsLast60 : null;
@@ -133,7 +130,11 @@ export default function SocialChannels({ slug }) {
                 : "—"
             }
           />
-          <Metric label="Followers" value={followersValue} hint={followersHint} />
+          <Metric
+            label="Posts"
+            value={igPosts != null ? igPosts.toLocaleString("en-US") : "—"}
+            hint={igPostsHint}
+          />
         </div>
       </section>
 
