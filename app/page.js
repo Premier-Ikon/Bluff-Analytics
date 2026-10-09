@@ -230,9 +230,7 @@ export default function Page() {
         <section className="card">
           <div className="card-head">
             <h2>Value by creator</h2>
-            <p className="lead">
-              Jul 9 – Oct 7 YouTube for all three. Meta cells are measured figures only — estimates show as —.
-            </p>
+            <p className="lead">July 9th – October 7th 2026</p>
           </div>
 
           <div className="compare-block">
