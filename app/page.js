@@ -4,7 +4,7 @@ import Link from "next/link";
 import AudienceMap from "./AudienceMap";
 import PlatformIcon from "./PlatformIcon";
 import { recent } from "../data/recent";
-import { measuredMetaViews, measuredMetaViewsForDays, social } from "../data/social";
+import { measuredMetaViews, social } from "../data/social";
 import { usStates } from "../data/states";
 
 const ROSTER_GEO_SCALE = 3;
@@ -77,12 +77,15 @@ function last90Stats(slug) {
 
 const teamYtViews = creators.reduce((sum, creator) => sum + last90Stats(creator.slug).views, 0);
 
-/** Meta team rollups: measured only. IG = all three; FB = Bluff 90d (partners pending). */
+/** Meta team rollups: measured only. IG = all three; FB = Bluff + On Tilt (Brettski pending). */
 const instagramViews = creators.reduce(
   (sum, creator) => sum + (measuredMetaViews(social[creator.slug]?.instagram) || 0),
   0,
 );
-const facebookViews = measuredMetaViewsForDays(social.bluff?.facebook, 90) || 0;
+const facebookViews = creators.reduce(
+  (sum, creator) => sum + (measuredMetaViews(social[creator.slug]?.facebook) || 0),
+  0,
+);
 const totalSubs = creators.reduce((sum, creator) => sum + creator.subscribers, 0);
 
 /** 30-day potential: YT all three ÷ 3; Meta only from measured packs (no estimates). */
@@ -96,10 +99,6 @@ const potential30 = creators.reduce((sum, creator) => {
 function measuredPosts(pack) {
   if (!pack || pack.postsEstimated || pack.postsLast60 == null) return null;
   return pack.postsLast60;
-}
-
-function cellViews90(pack) {
-  return measuredMetaViewsForDays(pack, 90);
 }
 
 const plan = [
@@ -162,10 +161,10 @@ export default function Page() {
             <article>
               <div className="metric-label metric-label-with-icon">
                 <PlatformIcon name="Facebook" />
-                Facebook views · Bluff
+                Facebook views · team
               </div>
               <div className="metric-value">{compact(facebookViews)}</div>
-              <div className="metric-hint">Measured 90d · partners pending export</div>
+              <div className="metric-hint">Bluff · On Tilt · Brettski pending</div>
             </article>
             <article>
               <div className="metric-label metric-label-with-icon">
@@ -188,7 +187,7 @@ export default function Page() {
             <h2>Team reach in market</h2>
             <p className="big-num">{compact(potential30)} views</p>
             <p>
-              YouTube team run-rate plus measured Meta (Instagram across all three · Bluff Facebook). Partner Facebook pending export.
+              YouTube team run-rate plus measured Meta (Instagram all three · Facebook Bluff + On Tilt). Brettski Facebook pending export.
             </p>
           </article>
           <article>
@@ -228,7 +227,7 @@ export default function Page() {
           <div className="card-head">
             <h2>Value by creator</h2>
             <p className="lead">
-              Jul 9 – Oct 7 YouTube for all three. Meta cells are measured 90-day figures only — estimates show as —.
+              Jul 9 – Oct 7 YouTube for all three. Meta cells are measured figures only — estimates show as —.
             </p>
           </div>
 
@@ -287,7 +286,7 @@ export default function Page() {
                   <tr>
                     <td>Facebook views</td>
                     {creators.map((creator) => {
-                      const views = cellViews90(social[creator.slug]?.facebook);
+                      const views = measuredMetaViews(social[creator.slug]?.facebook);
                       return <td className="num" key={creator.slug}>{views != null ? compact(views) : "—"}</td>;
                     })}
                   </tr>
