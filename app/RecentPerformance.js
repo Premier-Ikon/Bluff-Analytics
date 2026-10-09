@@ -2,7 +2,13 @@
 
 import PlatformIcon from "./PlatformIcon";
 import { recent } from "../data/recent";
-import { engagementRate, measuredMetaViews, social } from "../data/social";
+import {
+  displayMetaPosts,
+  displayMetaViews,
+  engagementRate,
+  measuredMetaViews,
+  social,
+} from "../data/social";
 
 const compact = (n) => {
   if (n >= 1_000_000) {
@@ -12,12 +18,15 @@ const compact = (n) => {
   }
   if (n >= 1_000) {
     const k = n / 1_000;
-    return `${Number.isInteger(k) ? k.toFixed(0) : k.toFixed(1)}K`;
+    const text = Number.isInteger(k) ? k.toFixed(0) : k.toFixed(1);
+    return `${text.replace(/\.0$/, "")}K`;
   }
   return n.toLocaleString("en-US");
 };
 
 const rate = (value) => `${value.toFixed(2)}%`;
+
+const withEstimate = (text, estimated) => (estimated ? `~${text}` : text);
 
 function cells(quarter) {
   return [quarter.longform, quarter.shorts];
@@ -64,26 +73,21 @@ function actionsFromRate(views, engagementPct) {
   return Math.round((views * engagementPct) / 100);
 }
 
-function measuredPosts(pack) {
-  if (!pack || pack.postsEstimated || pack.postsLast60 == null) return null;
-  return pack.postsLast60;
-}
-
 function platformRows(slug, posts) {
   const pack = social[slug] || {};
   const ig = pack.instagram;
   const fb = pack.facebook;
-  const igViews = measuredMetaViews(ig);
-  const fbViews = measuredMetaViews(fb);
-  const igPosts = measuredPosts(ig);
-  const fbPosts = measuredPosts(fb);
+  const igViewsDisplay = displayMetaViews(ig);
+  const fbViewsDisplay = displayMetaViews(fb);
+  const igPostsDisplay = displayMetaPosts(ig);
+  const fbPostsDisplay = displayMetaPosts(fb);
+  const igViewsMeasured = measuredMetaViews(ig);
   const ytRate = posts.all.engagement;
-  const igRate =
-    ig?.interactions != null && igViews != null ? engagementRate(ig.interactions, ig.views) : null;
-  const fbRate =
-    fb?.engagement != null && fbViews != null && !fb.engagementEstimated
-      ? engagementRate(fb.engagement, fb.views)
-      : null;
+  const igViews = igViewsDisplay?.value ?? null;
+  const fbViews = fbViewsDisplay?.value ?? null;
+  const igPosts = igPostsDisplay?.value ?? null;
+  const fbPosts = fbPostsDisplay?.value ?? null;
+
   const ytActions = actionsFromRate(posts.all.views, ytRate);
   const igActions = ig?.interactions != null && !ig.interactionsEstimated ? ig.interactions : null;
   // Bluff IG interactions are estimated from Meta split — still show for Bluff (slug === bluff)
@@ -92,12 +96,18 @@ function platformRows(slug, posts) {
       ? ig.interactions
       : igActions;
 
-  const fbActions =
-    fb?.engagement != null && !fb.engagementEstimated
-      ? fb.engagement
-      : slug === "bluff" && fb?.engagement != null
-        ? fb.engagement
-        : null;
+  const fbActions = fb?.engagement != null ? fb.engagement : null;
+  const fbActionsEstimated = Boolean(fb?.engagementEstimated && fbActions != null);
+
+  const igRate =
+    igActionsDisplay != null && igViews != null
+      ? engagementRate(igActionsDisplay, igViews)
+      : null;
+  const fbRate =
+    fbActions != null && fbViews != null ? engagementRate(fbActions, fbViews) : null;
+  const fbRateEstimated = Boolean(
+    fbRate != null && (fbActionsEstimated || fbViewsDisplay?.estimated),
+  );
 
   return [
     {
@@ -111,28 +121,46 @@ function platformRows(slug, posts) {
     },
     {
       name: "Instagram",
-      posts: igPosts != null ? igPosts.toLocaleString("en-US") : "—",
-      views: igViews != null ? compact(igViews) : "—",
+      posts:
+        igPosts != null
+          ? withEstimate(igPosts.toLocaleString("en-US"), igPostsDisplay.estimated)
+          : "—",
+      views:
+        igViews != null ? withEstimate(compact(igViews), igViewsDisplay.estimated) : "—",
       actions: igActionsDisplay != null ? compact(igActionsDisplay) : "—",
       avgViews:
-        igViews != null && igPosts != null ? compact(Math.round(igViews / igPosts)) : "—",
-      engagement: igRate != null ? rate(igRate) : igActionsDisplay != null && igViews != null
+        igViews != null && igPosts != null
+          ? withEstimate(
+              compact(Math.round(igViews / igPosts)),
+              igViewsDisplay.estimated || igPostsDisplay.estimated,
+            )
+          : "—",
+      engagement: igRate != null ? rate(igRate) : igActionsDisplay != null && igViewsMeasured != null
         ? rate(engagementRate(igActionsDisplay, ig.views))
         : "—",
       filled: Boolean(igViews != null || igPosts != null || igActionsDisplay != null),
     },
     {
       name: "Facebook",
-      posts: fbPosts != null ? fbPosts.toLocaleString("en-US") : "—",
-      views: fbViews != null ? compact(fbViews) : "—",
-      actions: fbActions != null ? compact(fbActions) : "—",
-      avgViews:
-        fbViews != null && fbPosts != null ? compact(Math.round(fbViews / fbPosts)) : "—",
-      engagement: fbRate != null
-        ? rate(fbRate)
-        : fbActions != null && fbViews != null
-          ? rate(engagementRate(fbActions, fb.views))
+      posts:
+        fbPosts != null
+          ? withEstimate(fbPosts.toLocaleString("en-US"), fbPostsDisplay.estimated)
           : "—",
+      views:
+        fbViews != null ? withEstimate(compact(fbViews), fbViewsDisplay.estimated) : "—",
+      actions:
+        fbActions != null
+          ? withEstimate(compact(fbActions), fbActionsEstimated)
+          : "—",
+      avgViews:
+        fbViews != null && fbPosts != null
+          ? withEstimate(
+              compact(Math.round(fbViews / fbPosts)),
+              fbViewsDisplay.estimated || fbPostsDisplay.estimated,
+            )
+          : "—",
+      engagement:
+        fbRate != null ? withEstimate(rate(fbRate), fbRateEstimated) : "—",
       filled: Boolean(fbViews != null || fbPosts != null || fbActions != null),
     },
   ];

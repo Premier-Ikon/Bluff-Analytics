@@ -5,7 +5,6 @@ import {
   displayMetaPosts,
   displayMetaViews,
   engagementRate,
-  measuredMetaViews,
   social,
 } from "../data/social";
 
@@ -18,7 +17,8 @@ const compact = (n) => {
   }
   if (n >= 1_000) {
     const k = n / 1_000;
-    return `${Number.isInteger(k) ? k.toFixed(0) : k.toFixed(1)}K`;
+    const text = Number.isInteger(k) ? k.toFixed(0) : k.toFixed(1);
+    return `${text.replace(/\.0$/, "")}K`;
   }
   return n.toLocaleString("en-US");
 };
@@ -77,20 +77,25 @@ export default function SocialChannels({ slug }) {
   const meta = pack.meta || null;
   const isBluff = slug === "bluff";
 
-  const igViewsMeasured = measuredMetaViews(ig);
-  const fbViewsMeasured = measuredMetaViews(fb);
   const igViewsDisplay = displayMetaViews(ig);
   const fbViewsDisplay = displayMetaViews(fb);
 
   const igActions =
     ig?.interactions != null && (isBluff || !ig.interactionsEstimated) ? ig.interactions : null;
-  const fbActions =
-    fb?.engagement != null && (isBluff || !fb.engagementEstimated) ? fb.engagement : null;
+  const igActionsEstimated = Boolean(ig?.interactionsEstimated && igActions != null);
+  const fbActions = fb?.engagement != null ? fb.engagement : null;
+  const fbActionsEstimated = Boolean(fb?.engagementEstimated && fbActions != null);
 
   const igRate =
-    igActions != null && igViewsMeasured != null ? engagementRate(igActions, igViewsMeasured) : null;
+    igActions != null && igViewsDisplay?.value != null
+      ? engagementRate(igActions, igViewsDisplay.value)
+      : null;
+  const igRateEstimated = Boolean(igRate != null && (igActionsEstimated || igViewsDisplay?.estimated));
   const fbRate =
-    fbActions != null && fbViewsMeasured != null ? engagementRate(fbActions, fbViewsMeasured) : null;
+    fbActions != null && fbViewsDisplay?.value != null
+      ? engagementRate(fbActions, fbViewsDisplay.value)
+      : null;
+  const fbRateEstimated = Boolean(fbRate != null && (fbActionsEstimated || fbViewsDisplay?.estimated));
 
   // Audience: Bluff Meta export, or partner IG audience from screenshots
   const audience = meta?.audience || ig?.audience || emptyAudience();
@@ -163,7 +168,7 @@ export default function SocialChannels({ slug }) {
             }
             hint={
               igActions != null
-                ? `${rate(igRate)} of views`
+                ? `${withEstimate(rate(igRate), igRateEstimated)} of views`
                 : "—"
             }
           />
@@ -210,10 +215,16 @@ export default function SocialChannels({ slug }) {
           />
           <Metric
             label="Engagement"
-            value={fbActions != null ? compact(fbActions) : "—"}
+            value={
+              fbActions != null
+                ? withEstimate(compact(fbActions), fbActionsEstimated)
+                : "—"
+            }
             hint={
               fbActions != null
-                ? `${rate(fbRate)} of views`
+                ? fbActionsEstimated
+                  ? `${withEstimate(rate(fbRate), fbRateEstimated)} of views · Estimate`
+                  : `${rate(fbRate)} of views`
                 : "—"
             }
           />

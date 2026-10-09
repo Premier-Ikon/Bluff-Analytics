@@ -32,10 +32,14 @@ const ONTILT_FB_FOLLOWS_PER_VIEW = 14809 / 12000000;
 const bluffFbFollows = Math.round(BLUFF_FB_VIEWS * ONTILT_FB_FOLLOWS_PER_VIEW);
 
 const BRETT_IG_VIEWS = 55281221;
+const BRETT_IG_INTERACTIONS = 1_709_000;
 /** Client estimates for Brettski Meta posts / Facebook views (mark "~" in UI). */
 const BRETT_IG_POSTS_EST = 302;
 const BRETT_FB_VIEWS_EST = 24_000_000;
 const BRETT_FB_POSTS_EST = 470;
+/** FB engagement estimate · apply Brett’s measured IG engagement rate to estimated FB views. */
+const BRETT_IG_ENGAGEMENT_RATE = BRETT_IG_INTERACTIONS / BRETT_IG_VIEWS;
+const BRETT_FB_ENGAGEMENT_EST = Math.round(BRETT_FB_VIEWS_EST * BRETT_IG_ENGAGEMENT_RATE);
 
 /** Bluff Meta audience — Audience.csv from Meta Business Suite. */
 const bluffAudience = {
@@ -164,7 +168,7 @@ export const social = {
       days: 90,
       views: BRETT_IG_VIEWS,
       viewsEstimated: false,
-      interactions: 1709000,
+      interactions: BRETT_IG_INTERACTIONS,
       interactionsExact: false,
       interactionsEstimated: false,
       netFollowers: 7392,
@@ -211,7 +215,7 @@ export const social = {
       days: 90,
       views: BRETT_FB_VIEWS_EST,
       viewsEstimated: true,
-      engagement: null,
+      engagement: BRETT_FB_ENGAGEMENT_EST,
       engagementEstimated: true,
       follows: null,
       followsEstimated: true,
@@ -220,7 +224,8 @@ export const social = {
       impressions: null,
       impressionsEstimated: true,
       avgImpressions: null,
-      source: "Client estimate · Facebook views & posts",
+      source:
+        "Client estimate · Facebook views & posts · engagement from Brett IG rate × FB views",
     },
     mgmRewards: {
       name: "Brett",
