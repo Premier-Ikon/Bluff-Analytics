@@ -342,6 +342,13 @@ export function engagementRate(interactions, views) {
   return Math.round((interactions / views) * 10000) / 100;
 }
 
+/** Scale a Meta pack’s views (or another absolute metric) to a target window. */
+export function scaleToDays(pack, targetDays = 90, field = "views") {
+  if (!pack || pack[field] == null) return null;
+  const sourceDays = pack.days || 90;
+  return Math.round(pack[field] * (targetDays / sourceDays));
+}
+
 export function youtubeImpressions(views, posts) {
   return {
     impressions: views,

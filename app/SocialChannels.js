@@ -1,7 +1,7 @@
 "use client";
 
 import PlatformIcon from "./PlatformIcon";
-import { engagementRate, social } from "../data/social";
+import { engagementRate, scaleToDays, social } from "../data/social";
 
 const compact = (n) => {
   if (n == null) return "—";
@@ -58,6 +58,10 @@ export default function SocialChannels({ slug }) {
   const fb = pack.facebook || null;
   const meta = pack.meta || null;
 
+  const igViews90 = scaleToDays(ig, 90);
+  const fbViews90 = scaleToDays(fb, 90);
+  const igActions90 = scaleToDays(ig, 90, "interactions");
+  const fbActions90 = scaleToDays(fb, 90, "engagement");
   const igRate = ig?.interactions != null ? engagementRate(ig.interactions, ig.views) : null;
   const fbRate = fb?.engagement != null ? engagementRate(fb.engagement, fb.views) : null;
   const audience = meta?.audience || ig?.audience || emptyAudience();
@@ -79,8 +83,11 @@ export default function SocialChannels({ slug }) {
   const followersHint = ig?.followers != null
     ? `+${compact(ig.netFollowers)} in window · +${ig.followerGrowthPct}%`
     : ig?.netFollowers != null
-      ? `Net follows · ${ig.days}-day window`
+      ? "Net follows · 90-day window"
       : "Unavailable";
+
+  const igScaled = ig && (ig.days || 90) !== 90;
+  const fbScaled = fb && (fb.days || 90) !== 90;
 
   return (
     <>
@@ -96,19 +103,19 @@ export default function SocialChannels({ slug }) {
         <div className="metrics package">
           <Metric
             label="Views"
-            value={ig ? compact(ig.views) : "—"}
-            hint={ig ? `${ig.days} days` : "Unavailable"}
+            value={igViews90 != null ? compact(igViews90) : "—"}
+            hint={ig ? `90 days${igScaled ? " · scaled" : ""}` : "Unavailable"}
           />
           <Metric
             label="Interactions"
             value={
-              ig?.interactions != null
-                ? `${compact(ig.interactions)}${ig.interactionsExact === false ? "+" : ""}`
+              igActions90 != null
+                ? `${compact(igActions90)}${ig.interactionsExact === false ? "+" : ""}`
                 : "—"
             }
             hint={
-              ig?.interactions != null
-                ? `${rate(igRate)} of views${ig.interactionsEstimated ? " · estimate" : ""}`
+              igActions90 != null
+                ? `${rate(igRate)} of views${ig.interactionsEstimated || igScaled ? " · estimate" : ""}`
                 : "Unavailable"
             }
           />
@@ -129,15 +136,19 @@ export default function SocialChannels({ slug }) {
         <div className="metrics package">
           <Metric
             label="Views"
-            value={fb ? compact(fb.views) : "—"}
-            hint={fb ? `${fb.days} days${fb.viewsEstimated ? " · estimate" : ""}` : "Unavailable"}
+            value={fbViews90 != null ? compact(fbViews90) : "—"}
+            hint={
+              fb
+                ? `90 days${fb.viewsEstimated || fbScaled ? " · estimate" : ""}`
+                : "Unavailable"
+            }
           />
           <Metric
             label="Engagement"
-            value={fb?.engagement != null ? compact(fb.engagement) : "—"}
+            value={fbActions90 != null ? compact(fbActions90) : "—"}
             hint={
-              fb?.engagement != null
-                ? `${rate(fbRate)} of views${fb.engagementEstimated ? " · estimate" : ""}`
+              fbActions90 != null
+                ? `${rate(fbRate)} of views${fb.engagementEstimated || fbScaled ? " · estimate" : ""}`
                 : "Unavailable"
             }
           />
@@ -148,7 +159,7 @@ export default function SocialChannels({ slug }) {
           />
           <Metric
             label="Est. impressions"
-            value={fb?.impressions != null ? compact(fb.impressions) : "—"}
+            value={fbViews90 != null ? compact(fbViews90) : "—"}
             hint={
               fb?.avgImpressions != null
                 ? `${compact(fb.avgImpressions)} avg · views proxy`

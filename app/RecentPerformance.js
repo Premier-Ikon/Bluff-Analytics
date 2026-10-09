@@ -2,7 +2,7 @@
 
 import PlatformIcon from "./PlatformIcon";
 import { recent } from "../data/recent";
-import { engagementRate, social, youtubeImpressions } from "../data/social";
+import { engagementRate, scaleToDays, social, youtubeImpressions } from "../data/social";
 
 const compact = (n) => {
   if (n >= 1_000_000) {
@@ -68,12 +68,14 @@ function platformRows(slug, posts) {
   const pack = social[slug] || {};
   const ig = pack.instagram;
   const fb = pack.facebook;
+  const igViews90 = scaleToDays(ig, 90);
+  const fbViews90 = scaleToDays(fb, 90);
+  const igActions90 = scaleToDays(ig, 90, "interactions");
+  const fbActions90 = scaleToDays(fb, 90, "engagement");
   const ytRate = posts.all.engagement;
   const igRate = ig?.interactions != null ? engagementRate(ig.interactions, ig.views) : null;
   const fbRate = fb?.engagement != null ? engagementRate(fb.engagement, fb.views) : null;
   const ytActions = actionsFromRate(posts.all.views, ytRate);
-  const igActions = ig?.interactions != null ? ig.interactions : null;
-  const fbActions = fb?.engagement != null ? fb.engagement : null;
   const igEng = igRate != null ? rate(igRate) : "—";
   const fbEng = fbRate != null ? rate(fbRate) : "—";
 
@@ -90,8 +92,8 @@ function platformRows(slug, posts) {
     {
       name: "Instagram",
       posts: ig?.postsLast60 != null ? ig.postsLast60.toLocaleString("en-US") : "—",
-      reach: ig ? compact(ig.views) : "—",
-      actions: igActions != null ? compact(igActions) : "—",
+      reach: igViews90 != null ? compact(igViews90) : "—",
+      actions: igActions90 != null ? compact(igActions90) : "—",
       avgImpressions: ig?.avgImpressions != null ? compact(ig.avgImpressions) : "—",
       engagement: igEng,
       filled: Boolean(ig),
@@ -99,8 +101,8 @@ function platformRows(slug, posts) {
     {
       name: "Facebook",
       posts: fb?.postsLast60 != null ? fb.postsLast60.toLocaleString("en-US") : "—",
-      reach: fb ? compact(fb.views) : "—",
-      actions: fbActions != null ? compact(fbActions) : "—",
+      reach: fbViews90 != null ? compact(fbViews90) : "—",
+      actions: fbActions90 != null ? compact(fbActions90) : "—",
       avgImpressions: fb?.avgImpressions != null ? compact(fb.avgImpressions) : "—",
       engagement: fbEng,
       filled: Boolean(fb),
@@ -116,7 +118,7 @@ export default function RecentPerformance({ slug }) {
   const bothEngagement =
     (data.q2.all.engagement * data.q2.all.views + data.q3.all.engagement * data.q3.all.views) /
     bothViews;
-  const posts = data.last60;
+  const posts = data.last90;
   const platforms = platformRows(slug, posts);
   const yt = youtubeImpressions(bothViews, bothVideos);
 

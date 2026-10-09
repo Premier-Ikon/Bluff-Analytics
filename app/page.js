@@ -4,7 +4,7 @@ import Link from "next/link";
 import AudienceMap from "./AudienceMap";
 import PlatformIcon from "./PlatformIcon";
 import { recent } from "../data/recent";
-import { social } from "../data/social";
+import { scaleToDays, social } from "../data/social";
 import { usStates } from "../data/states";
 
 const ROSTER_GEO_SCALE = 3;
@@ -73,12 +73,6 @@ function last90Stats(slug) {
     posts: row.videos,
     avgViews: row.avgViews,
   };
-}
-
-function scaleToDays(pack, targetDays = 90) {
-  if (!pack?.views) return null;
-  const sourceDays = pack.days || 90;
-  return Math.round(pack.views * (targetDays / sourceDays));
 }
 
 const teamYtViews = creators.reduce((sum, creator) => sum + last90Stats(creator.slug).views, 0);
