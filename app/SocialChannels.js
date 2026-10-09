@@ -129,7 +129,7 @@ export default function SocialChannels({ slug }) {
             }
             hint={
               igActions != null
-                ? `${rate(igRate)} of views${ig.interactionsEstimated ? " · estimate" : ""}`
+                ? `${rate(igRate)} of views`
                 : "—"
             }
           />
@@ -161,14 +161,14 @@ export default function SocialChannels({ slug }) {
             value={fbActions != null ? compact(fbActions) : "—"}
             hint={
               fbActions != null
-                ? `${rate(fbRate)} of views${fb.engagementEstimated ? " · estimate" : ""}`
+                ? `${rate(fbRate)} of views`
                 : "—"
             }
           />
           <Metric
-            label="Posts · measured window"
+            label="Posts"
             value={fbPosts != null ? fbPosts.toLocaleString("en-US") : "—"}
-            hint={fbPosts != null ? "Measured" : "—"}
+            hint={fbPosts != null ? daysHint(fb) : "—"}
           />
         </div>
       </section>
