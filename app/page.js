@@ -187,7 +187,7 @@ export default function Page() {
             <h2>Team reach in market</h2>
             <p className="big-num">{compact(potential30)} views</p>
             <p>
-              YouTube team run-rate plus measured Meta (Instagram all three · Facebook Bluff + On Tilt). Brettski Facebook pending export.
+              Potential exposure over the next 30 days across YouTube, Instagram, and Facebook — the team’s combined reach in market.
             </p>
           </article>
           <article>
@@ -195,7 +195,7 @@ export default function Page() {
             <h2>Value of working with the team</h2>
             <p className="big-num">{compact(totalSubs)} fans</p>
             <p>
-              {compact(potential30)} potential views in 30 days from measured channels — YouTube across the team, Meta where we have exports. Property-shot content that keeps working after the visit.
+              {compact(potential30)} potential views in 30 days across YouTube, Instagram, and Facebook.
             </p>
           </article>
           <article>
