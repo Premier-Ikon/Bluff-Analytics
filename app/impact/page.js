@@ -258,6 +258,9 @@ export default function ImpactPage() {
             <div className="brand-meta">
               {impact.property} · {impact.location} · Sample case study
             </div>
+            <div className="brand-meta brand-disclaimer">
+              Figures in this case study are rough numbers based on estimates from a prior activation
+            </div>
           </div>
         </div>
       </header>
