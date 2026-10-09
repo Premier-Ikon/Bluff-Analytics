@@ -4,7 +4,7 @@ import Link from "next/link";
 import AudienceMap from "./AudienceMap";
 import PlatformIcon from "./PlatformIcon";
 import { recent } from "../data/recent";
-import { measuredMetaViews, social } from "../data/social";
+import { displayMetaPosts, displayMetaViews, measuredMetaViews, social } from "../data/social";
 import { usStates } from "../data/states";
 
 const ROSTER_GEO_SCALE = 3;
@@ -77,7 +77,7 @@ function last90Stats(slug) {
 
 const teamYtViews = creators.reduce((sum, creator) => sum + last90Stats(creator.slug).views, 0);
 
-/** Meta team rollups: measured only. IG = all three; FB = Bluff + On Tilt (Brettski pending). */
+/** Meta team rollups: measured only. IG = all three; FB = Bluff + On Tilt (Brettski estimate shown in table with ~). */
 const instagramViews = creators.reduce(
   (sum, creator) => sum + (measuredMetaViews(social[creator.slug]?.instagram) || 0),
   0,
@@ -96,9 +96,10 @@ const potential30 = creators.reduce((sum, creator) => {
   + Math.round(instagramViews / 3)
   + Math.round(facebookViews / 3);
 
-function measuredPosts(pack) {
-  if (!pack || pack.postsEstimated || pack.postsLast60 == null) return null;
-  return pack.postsLast60;
+function formatDisplay(row, asCompact = false) {
+  if (row == null) return "—";
+  const text = asCompact ? compact(row.value) : row.value.toLocaleString("en-US");
+  return row.estimated ? `~${text}` : text;
 }
 
 function CreatorLogo({ slug, name, className = "" }) {
@@ -149,7 +150,7 @@ export default function Page() {
                 Facebook views · team
               </div>
               <div className="metric-value">{compact(facebookViews)}</div>
-              <div className="metric-hint">Bluff · On Tilt · Brettski pending</div>
+              <div className="metric-hint">Bluff · On Tilt · Brettski ~ in table</div>
             </article>
             <article>
               <div className="metric-label metric-label-with-icon">
@@ -250,39 +251,35 @@ export default function Page() {
                   </tr>
                   <tr>
                     <td>Instagram views</td>
-                    {creators.map((creator) => {
-                      const views = measuredMetaViews(social[creator.slug]?.instagram);
-                      return <td className="num" key={creator.slug}>{views != null ? compact(views) : "—"}</td>;
-                    })}
+                    {creators.map((creator) => (
+                      <td className="num" key={creator.slug}>
+                        {formatDisplay(displayMetaViews(social[creator.slug]?.instagram), true)}
+                      </td>
+                    ))}
                   </tr>
                   <tr>
                     <td>IG posts</td>
-                    {creators.map((creator) => {
-                      const posts = measuredPosts(social[creator.slug]?.instagram);
-                      return (
-                        <td className="num" key={creator.slug}>
-                          {posts != null ? posts.toLocaleString("en-US") : "—"}
-                        </td>
-                      );
-                    })}
+                    {creators.map((creator) => (
+                      <td className="num" key={creator.slug}>
+                        {formatDisplay(displayMetaPosts(social[creator.slug]?.instagram))}
+                      </td>
+                    ))}
                   </tr>
                   <tr>
                     <td>Facebook views</td>
-                    {creators.map((creator) => {
-                      const views = measuredMetaViews(social[creator.slug]?.facebook);
-                      return <td className="num" key={creator.slug}>{views != null ? compact(views) : "—"}</td>;
-                    })}
+                    {creators.map((creator) => (
+                      <td className="num" key={creator.slug}>
+                        {formatDisplay(displayMetaViews(social[creator.slug]?.facebook), true)}
+                      </td>
+                    ))}
                   </tr>
                   <tr>
                     <td>FB posts</td>
-                    {creators.map((creator) => {
-                      const posts = measuredPosts(social[creator.slug]?.facebook);
-                      return (
-                        <td className="num" key={creator.slug}>
-                          {posts != null ? posts.toLocaleString("en-US") : "—"}
-                        </td>
-                      );
-                    })}
+                    {creators.map((creator) => (
+                      <td className="num" key={creator.slug}>
+                        {formatDisplay(displayMetaPosts(social[creator.slug]?.facebook))}
+                      </td>
+                    ))}
                   </tr>
                 </tbody>
               </table>

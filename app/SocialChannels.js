@@ -1,7 +1,13 @@
 "use client";
 
 import PlatformIcon from "./PlatformIcon";
-import { engagementRate, measuredMetaViews, social } from "../data/social";
+import {
+  displayMetaPosts,
+  displayMetaViews,
+  engagementRate,
+  measuredMetaViews,
+  social,
+} from "../data/social";
 
 const compact = (n) => {
   if (n == null) return "—";
@@ -18,6 +24,8 @@ const compact = (n) => {
 };
 
 const rate = (value) => (value == null ? "—" : `${value.toFixed(2)}%`);
+
+const withEstimate = (text, estimated) => (estimated ? `~${text}` : text);
 
 function Metric({ label, value, hint }) {
   return (
@@ -69,16 +77,20 @@ export default function SocialChannels({ slug }) {
   const meta = pack.meta || null;
   const isBluff = slug === "bluff";
 
-  const igViews = measuredMetaViews(ig);
-  const fbViews = measuredMetaViews(fb);
+  const igViewsMeasured = measuredMetaViews(ig);
+  const fbViewsMeasured = measuredMetaViews(fb);
+  const igViewsDisplay = displayMetaViews(ig);
+  const fbViewsDisplay = displayMetaViews(fb);
 
   const igActions =
     ig?.interactions != null && (isBluff || !ig.interactionsEstimated) ? ig.interactions : null;
   const fbActions =
     fb?.engagement != null && (isBluff || !fb.engagementEstimated) ? fb.engagement : null;
 
-  const igRate = igActions != null && ig?.views != null ? engagementRate(igActions, ig.views) : null;
-  const fbRate = fbActions != null && fb?.views != null ? engagementRate(fbActions, fb.views) : null;
+  const igRate =
+    igActions != null && igViewsMeasured != null ? engagementRate(igActions, igViewsMeasured) : null;
+  const fbRate =
+    fbActions != null && fbViewsMeasured != null ? engagementRate(fbActions, fbViewsMeasured) : null;
 
   // Audience: Bluff Meta export, or partner IG audience from screenshots
   const audience = meta?.audience || ig?.audience || emptyAudience();
@@ -89,11 +101,11 @@ export default function SocialChannels({ slug }) {
   const topCountries = (audience.countries || []).slice(0, 5);
   const topCities = (audience.cities || []).slice(0, 5);
 
-  const igPosts =
-    ig && !ig.postsEstimated && ig.postsLast60 != null ? ig.postsLast60 : null;
+  const igPostsDisplay = displayMetaPosts(ig);
   const igBreakdown = ig?.postsLast60Breakdown;
   const igPostsHint = (() => {
-    if (igPosts == null) return "—";
+    if (igPostsDisplay == null) return "—";
+    if (igPostsDisplay.estimated) return "Estimate";
     if (!igBreakdown) return "Jul 10 – Oct 7 export";
     if (igBreakdown.feed != null || igBreakdown.stories != null) {
       return `${igBreakdown.feed || 0} feed · ${igBreakdown.stories || 0} stories`;
@@ -104,11 +116,11 @@ export default function SocialChannels({ slug }) {
     return "Jul 10 – Oct 7 export";
   })();
 
-  const fbPosts =
-    fb && !fb.postsEstimated && fb.postsLast60 != null ? fb.postsLast60 : null;
+  const fbPostsDisplay = displayMetaPosts(fb);
   const fbBreakdown = fb?.postsLast60Breakdown;
   const fbPostsHint = (() => {
-    if (fbPosts == null) return "—";
+    if (fbPostsDisplay == null) return "—";
+    if (fbPostsDisplay.estimated) return "Estimate";
     if (fbBreakdown?.videos != null) {
       return `${fbBreakdown.videos} videos · ${fbBreakdown.photos || 0} photos · ${fbBreakdown.text || 0} text`;
     }
@@ -129,8 +141,18 @@ export default function SocialChannels({ slug }) {
         <div className="metrics metrics-3 package">
           <Metric
             label="Views"
-            value={igViews != null ? compact(igViews) : "—"}
-            hint={igViews != null ? daysHint(ig) : "—"}
+            value={
+              igViewsDisplay != null
+                ? withEstimate(compact(igViewsDisplay.value), igViewsDisplay.estimated)
+                : "—"
+            }
+            hint={
+              igViewsDisplay != null
+                ? igViewsDisplay.estimated
+                  ? "Estimate"
+                  : daysHint(ig)
+                : "—"
+            }
           />
           <Metric
             label="Interactions"
@@ -147,7 +169,11 @@ export default function SocialChannels({ slug }) {
           />
           <Metric
             label="Posts"
-            value={igPosts != null ? igPosts.toLocaleString("en-US") : "—"}
+            value={
+              igPostsDisplay != null
+                ? withEstimate(igPostsDisplay.value.toLocaleString("en-US"), igPostsDisplay.estimated)
+                : "—"
+            }
             hint={igPostsHint}
           />
         </div>
@@ -161,16 +187,26 @@ export default function SocialChannels({ slug }) {
           </p>
           <h2>Facebook performance</h2>
           <p className="lead">
-            {fbViews != null || fbActions != null || fbPosts != null
-              ? windowLead(fb, "Measured Facebook window")
-              : "No measured Facebook export yet"}
+            {fbViewsDisplay != null || fbActions != null || fbPostsDisplay != null
+              ? windowLead(fb, "Facebook window")
+              : "No Facebook data yet"}
           </p>
         </div>
         <div className="metrics metrics-3 package">
           <Metric
             label="Views"
-            value={fbViews != null ? compact(fbViews) : "—"}
-            hint={fbViews != null ? daysHint(fb) : "—"}
+            value={
+              fbViewsDisplay != null
+                ? withEstimate(compact(fbViewsDisplay.value), fbViewsDisplay.estimated)
+                : "—"
+            }
+            hint={
+              fbViewsDisplay != null
+                ? fbViewsDisplay.estimated
+                  ? "Estimate"
+                  : daysHint(fb)
+                : "—"
+            }
           />
           <Metric
             label="Engagement"
@@ -183,7 +219,11 @@ export default function SocialChannels({ slug }) {
           />
           <Metric
             label="Posts"
-            value={fbPosts != null ? fbPosts.toLocaleString("en-US") : "—"}
+            value={
+              fbPostsDisplay != null
+                ? withEstimate(fbPostsDisplay.value.toLocaleString("en-US"), fbPostsDisplay.estimated)
+                : "—"
+            }
             hint={fbPostsHint}
           />
         </div>

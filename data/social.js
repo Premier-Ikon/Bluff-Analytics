@@ -2,12 +2,12 @@
  * Social metrics for the partnership brief.
  *
  * Bluff: full Meta exports — keep as-is (measured / client-ready).
- * Brettski: Instagram Insights screenshots only. Facebook and Meta post counts
- *   were estimates → omitted (null) so the UI shows "—".
+ * Brettski: Instagram Insights screenshots (views measured). IG posts, Facebook
+ *   views, and Facebook posts are client estimates — shown with "~" in the UI.
  * On Tilt: Instagram Insights (60d views) + Facebook Professional (28d views).
  *   IG/FB post counts measured from Meta content exports Jul 10–Oct 7.
  *
- * Team summaries should only roll up measured Meta values (see measuredMetaViews).
+ * Team rollups only include measured Meta values (see measuredMetaViews).
  */
 
 // Meta content exports Jul 10–Oct 7 (IG reels/carousels + stories; Facebook posts)
@@ -32,6 +32,10 @@ const ONTILT_FB_FOLLOWS_PER_VIEW = 14809 / 12000000;
 const bluffFbFollows = Math.round(BLUFF_FB_VIEWS * ONTILT_FB_FOLLOWS_PER_VIEW);
 
 const BRETT_IG_VIEWS = 55281221;
+/** Client estimates for Brettski Meta posts / Facebook views (mark "~" in UI). */
+const BRETT_IG_POSTS_EST = 302;
+const BRETT_FB_VIEWS_EST = 24_000_000;
+const BRETT_FB_POSTS_EST = 470;
 
 /** Bluff Meta audience — Audience.csv from Meta Business Suite. */
 const bluffAudience = {
@@ -194,31 +198,29 @@ export const social = {
         ],
         peakActive: "12 PM – 6 PM PDT",
       },
-      // Post counts were scaled from Bluff — omit until we have Brett’s export
-      postsLast60: null,
+      postsLast60: BRETT_IG_POSTS_EST,
       postsEstimated: true,
       impressions: null,
       impressionsEstimated: true,
       avgImpressions: null,
       avgReach: null,
-      source: "Instagram Insights screenshots · post counts omitted (no export)",
+      source: "Instagram Insights screenshots · posts estimate",
     },
-    // No measured Facebook export — omit so UI shows "—"
     facebook: {
-      window: null,
-      days: null,
-      views: null,
+      window: "Past 90 days (estimate)",
+      days: 90,
+      views: BRETT_FB_VIEWS_EST,
       viewsEstimated: true,
       engagement: null,
       engagementEstimated: true,
       follows: null,
       followsEstimated: true,
-      postsLast60: null,
+      postsLast60: BRETT_FB_POSTS_EST,
       postsEstimated: true,
       impressions: null,
       impressionsEstimated: true,
       avgImpressions: null,
-      source: "No Facebook export — omitted",
+      source: "Client estimate · Facebook views & posts",
     },
     mgmRewards: {
       name: "Brett",
@@ -337,6 +339,18 @@ export function engagementRate(interactions, views) {
 export function measuredMetaViews(pack) {
   if (!pack || pack.views == null || pack.viewsEstimated) return null;
   return pack.views;
+}
+
+/** Views for display — includes estimates (caller should mark with "~"). */
+export function displayMetaViews(pack) {
+  if (!pack || pack.views == null) return null;
+  return { value: pack.views, estimated: Boolean(pack.viewsEstimated) };
+}
+
+/** Posts for display — includes estimates (caller should mark with "~"). */
+export function displayMetaPosts(pack) {
+  if (!pack || pack.postsLast60 == null) return null;
+  return { value: pack.postsLast60, estimated: Boolean(pack.postsEstimated) };
 }
 
 /**
