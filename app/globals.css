@@ -1080,6 +1080,13 @@ td.missing,
   font-size: 13px;
 }
 
+.plan-note {
+  margin: 4px 0 8px;
+  padding-top: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
 .open-list { counter-reset: open; }
 
 .open-list li::before {

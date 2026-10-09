@@ -102,12 +102,22 @@ function measuredPosts(pack) {
 }
 
 const plan = [
-  ["Arrival", "Walkthrough, credentials, and a filming path signed off with security."],
-  ["Filming", "Long-form and short-form on the floor. Branding and camera spots agreed first."],
-  ["Meet-and-greet", "A set fan window with a headcount the property records."],
-  ["Offers", "Giveaways or free play on property terms. Redemptions tracked by the casino."],
-  ["Social posts", "Posts during and after the visit, counted by platform."],
-  ["Follow-up", "Views at 7, 30, 60, and 90 days. Report each property, then the full tour."],
+  ["Team Arrival", "Arrive the evening before or early morning of activation day. Check in at the property."],
+  ["Team Dinner (Optional)", "Dinner at an on-property restaurant on the day of arrival or the evening following the activation, when available."],
+  ["10:00 AM · Private Meet & Greet", "Exclusive fan experience for up to 20 guests, if applicable."],
+  ["11:00 AM · Team Lunch", "Team breaks for lunch ahead of the main activation."],
+  ["12:45 PM · Grand Entrance", "Full creator team makes a coordinated entrance onto the casino floor."],
+  [
+    "1:00–3:00 PM · Main Fan Activation",
+    "Play craps with fans at a designated table for about 1–2 hours, distribute promotional free-play chips, interact with fans, and film content.",
+  ],
+  ["Fan Session Wrap-Up", "Conclude the scheduled fan gaming session and final interactions."],
+  ["Private Team Break · ~1 Hour", "Team moves to a secure location to allow fans to disperse."],
+  [
+    "Additional Casino Play & Filming",
+    "Team returns to the floor for high-limit slots and/or table games, capturing more long-form and short-form content.",
+  ],
+  ["Wrap-Up & Departure", "Complete filming and depart for the next tour destination."],
 ];
 
 function CreatorLogo({ slug, name, className = "" }) {
@@ -138,13 +148,7 @@ export default function Page() {
           <div className="hero-copy">
             <p className="kicker">Team Summary · Past 90 days</p>
             <h1>
-              The combined reach of Bluff, Brettski, and On Tilt Boys
-              <span className="hero-platforms" aria-label="YouTube, Instagram, and Facebook">
-                <PlatformIcon name="YouTube" />
-                <PlatformIcon name="Instagram" />
-                <PlatformIcon name="Facebook" />
-              </span>
-              {" "}— and the property impact it can drive.
+              The combined reach of Bluff, Brettski, and On Tilt Boys — and the property impact it can drive.
             </h1>
             <p>
               This brief stacks all three creators as one team: total audience, shared geography, and the upside for an MGM property activation. Channel-level detail lives on each creator tab.
@@ -307,12 +311,12 @@ export default function Page() {
           </div>
         </section>
 
-        <p className="section-label"><span>03</span> Sample property itinerary</p>
+        <p className="section-label"><span>03</span> Sample property visit itinerary</p>
         <section className="card">
           <div className="card-head">
-            <h2>How a property activation runs</h2>
+            <h2>A typical casino activation itinerary</h2>
             <p className="lead">
-              Blueprint for turning team reach into on-property impact. Repeat across a multi-property tour; outcomes tracked per visit.
+              Based on previous successful activations — bringing creators and fans together for an on-property experience while capturing engaging casino content.
             </p>
           </div>
           <ol className="plan">
@@ -326,6 +330,9 @@ export default function Page() {
               </li>
             ))}
           </ol>
+          <p className="lead plan-note">
+            Sample itinerary only. Timing, gaming activities, filming, and fan experiences are flexible and subject to property approval.
+          </p>
         </section>
       </main>
     </>
